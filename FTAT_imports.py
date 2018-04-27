@@ -105,7 +105,7 @@ class ParameterMap:
 
         self.hovered_symbol = ''
         
-    def hover_handler(self, self2, content):
+    def hover_handler(self, _, content):
         self.symbol = content.get('data', '')
 
         if(self.symbol != self.hovered_symbol):
@@ -131,8 +131,10 @@ class LinePlot:
         self.xax = Axis(scale=self.xs, label='Time', grids='on', tick_format='%H:%M:%S.%L')
         self.yax = Axis(scale=self.ys, orientation='vertical', grids='on', grid_lines='dashed')
 
-        # canvas or actual figure
+        # canvas or actual figure                                                                     ##################
         self.fig = Figure(marks=[self.line], axes=[self.xax, self.yax], layout=Layout(width = '80%'))   
+        ##################
+        
 
 ########
 
