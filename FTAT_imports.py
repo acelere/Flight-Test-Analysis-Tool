@@ -14,11 +14,15 @@ from bqplot.interacts import (
 from bqplot.market_map import MarketMap
 from traitlets import link
 
-from ipywidgets import ToggleButtons, VBox, HBox, HTML, Box
+from ipywidgets import ToggleButtons, VBox, HBox, HTML, Box, Output
 from ipywidgets import widgets
 from ipywidgets import Label, Layout, Style
 from ipywidgets import interact, interactive, fixed, interact_manual
 from IPython.display import display, HTML
+
+import matplotlib
+import matplotlib.pyplot as plt
+
 import os
 
 # from:
@@ -416,15 +420,16 @@ class SimpleZoomSlider():
         #  maybe change the plot method so that we do not need to pass the current_plot_data anymore
         
 
+
 class StripChart(object):
     def __init__(self, dataframe, selection_map, ts_source_plot):
         self.dataframe = dataframe
         self.selection_map = selection_map
         self.ts_source_plot = ts_source_plot
-        
-        self.path = os.getcwd()
+        #self.path = os.getcwd()
         self._update_charts()
         self.msg = ''
+        self.matplotlib_button_clicked = False
         
     def _update_charts(self):
         
@@ -439,8 +444,6 @@ class StripChart(object):
         
         self.slice_start_index = self.dataframe.index.searchsorted(self.slice_start)
         initial_value = self.dataframe.index[self.slice_start_index].timestamp()
-
-
         self.strip_chart_x_data = self.dataframe.iloc[(self.dataframe.index >= self.slice_start) & 
                                        (self.dataframe.index <= self.slice_end)].index
             
@@ -452,33 +455,67 @@ class StripChart(object):
     
     def _update(self, box):
         
-        def on_click(b):
+        def on_click_update_SC(b):
+            self.matplotlib_button_clicked = False
             self._update_charts()
             self._update(box)
         
-        plot_button = widgets.Button(description='Plot', background_color='#d0d0ff', layout=Layout(width='70%', height='35px'))
-        plot_button.on_click(on_click)
+        def on_click_final_plot(b):
+            self.matplotlib_button_clicked = True
+            self._update_charts()
+            self._update(box)
+        
+        plot_button = widgets.Button(description='Draft Plot', background_color='#d0d0ff', layout=Layout(width='50%', height='35px'))
+        plot_button.on_click(on_click_update_SC)
+        matplotlib_plot_button = widgets.Button(description='Final Plot', background_color='#1f9b1d', layout=Layout(width='50%', height='35px'))
+        matplotlib_plot_button.on_click(on_click_final_plot)
         plotlist = []
-        counter = 0
-        for selection in self.selection_map.map.selected:
-            strip_chart_y_data = self.dataframe.iloc[(self.dataframe.index >= self.slice_start) & 
-                                       (self.dataframe.index <= self.slice_end)][selection].values
-            plotlist.append(LinePlot(self.strip_chart_x_data, strip_chart_y_data))
-            plotlist[counter].fig.title = selection
-            counter += 1
+        if self.matplotlib_button_clicked:
+            
+            counter = 1
+            #clear_output()
+            outbox = Output()
+            myfig = plt.figure(figsize = (16,(len(self.selection_map.map.selected)*4)))
+            plt.subplots_adjust(hspace = 0.0)
+            with outbox:
+                for selection in self.selection_map.map.selected:
+                    strip_chart_y_data = self.dataframe.iloc[(self.dataframe.index >= self.slice_start) & 
+                                               (self.dataframe.index <= self.slice_end)][selection].values
+                    ax = myfig.add_subplot(len(self.selection_map.map.selected), 1, counter)
 
-        # Time Slices Analysis Section
-        strip_chart_items = []
-        for plots in plotlist:
-            plots.xs.min = None
-            plots.xs.max = None
-            plots.ys.min = None
-            plots.ys.max = None
-            plots.xax.tick_format = '%M:%S.%L'
-            strip_chart_items.append(plots.fig)
-        #test_analysis_form_items = [
-        #    VBox(test_analysis_form_items1)
-        #]
-        strip_chart_items.insert(0, plot_button)
-        strip_chart_items.insert(1, widgets.Label(self.msg))
-        box.children = strip_chart_items
+                    ax.plot(self.strip_chart_x_data, strip_chart_y_data)
+                    plt.ylabel(selection)
+                    if counter < len(self.selection_map.map.selected):
+                        ax.axes.get_xaxis().set_ticks([])
+                    counter += 1
+
+            # Time Slices Analysis Section
+            strip_chart_items = [plot_button, matplotlib_plot_button]
+            strip_chart_items.append(outbox)
+            strip_chart_items.insert(1, widgets.Label(self.msg))
+            box.children = strip_chart_items
+            
+        else:
+            
+            counter = 0
+            for selection in self.selection_map.map.selected:
+                strip_chart_y_data = self.dataframe.iloc[(self.dataframe.index >= self.slice_start) & 
+                                           (self.dataframe.index <= self.slice_end)][selection].values
+                plotlist.append(LinePlot(self.strip_chart_x_data, strip_chart_y_data))
+                plotlist[counter].fig.title = selection
+                counter += 1
+
+            # Time Slices Analysis Section
+            strip_chart_items = [plot_button, matplotlib_plot_button]
+            for plots in plotlist:
+                plots.xs.min = None
+                plots.xs.max = None
+                plots.ys.min = None
+                plots.ys.max = None
+                plots.xax.tick_format = '%M:%S.%L'
+                strip_chart_items.append(plots.fig)
+            strip_chart_items.insert(1, widgets.Label(self.msg))
+            box.children = strip_chart_items
+        
+        
+        
