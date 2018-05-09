@@ -422,10 +422,13 @@ class SimpleZoomSlider():
 
 
 class StripChart(object):
-    def __init__(self, dataframe, selection_map, ts_source_plot):
+    def __init__(self, dataframe, selection_map, ts_source_plot, ts_title):
+        #we pass the time slice source plot instead of the time slice in the db dictionary
+        #because if the user changes the start/end with the slider, we want the strip charts to be in sync
         self.dataframe = dataframe
         self.selection_map = selection_map
         self.ts_source_plot = ts_source_plot
+        self.ts_title = ts_title
         #self.path = os.getcwd()
         self._update_charts()
         self.msg = ''
@@ -477,6 +480,7 @@ class StripChart(object):
             outbox = Output()
             myfig = plt.figure(figsize = (16,(len(self.selection_map.map.selected)*4)))
             plt.subplots_adjust(hspace = 0.0)
+            plt.title(self.ts_title)
             with outbox:
                 for selection in self.selection_map.map.selected:
                     strip_chart_y_data = self.dataframe.iloc[(self.dataframe.index >= self.slice_start) & 
@@ -488,6 +492,7 @@ class StripChart(object):
                     if counter < len(self.selection_map.map.selected):
                         ax.axes.get_xaxis().set_ticks([])
                     counter += 1
+                
 
             # Time Slices Analysis Section
             strip_chart_items = [plot_button, matplotlib_plot_button]
@@ -516,6 +521,3 @@ class StripChart(object):
                 strip_chart_items.append(plots.fig)
             strip_chart_items.insert(1, widgets.Label(self.msg))
             box.children = strip_chart_items
-        
-        
-        
