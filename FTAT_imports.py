@@ -492,6 +492,10 @@ class StripChart(object):
                     if counter < len(self.selection_map.map.selected):
                         ax.axes.get_xaxis().set_ticks([])
                     counter += 1
+            ab = myfig.get_axes()
+            ac = ab[0]
+            ac.tick_params(bottom=False, top = False, left = False, right = False)
+            ac.tick_params(labelbottom=False, labeltop = False, labelleft = False, labelright = False)
                 
 
             # Time Slices Analysis Section
