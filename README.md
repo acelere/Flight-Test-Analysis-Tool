@@ -10,7 +10,7 @@ This is done by selecting the start and end times and plotting a zoomed in graph
 If the time slice is set, select save time slice and give it a number and description.
 Proceed to define all time slices in the flight.
 
-Once the slices are defined, the next set of cells help you check for trim shots and stabilization by offering a curve fitting function to the data.
+Once the slices are defined, check for trim shots and stabilization by looking at the curve fitting function to the data.
 
 Time slices can be saved to disk.
 
