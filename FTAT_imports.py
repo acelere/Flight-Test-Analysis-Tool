@@ -137,12 +137,6 @@ class sliceSelectDialog():
 
 class DataSliceSelect():
     def __init__(self, time_slices_db=None):
-        self.analysisTPdd = widgets.Dropdown(
-        options=time_slices_db,
-        description='TP#:',
-        value=None,
-        disabled=False
-        )
 
         self.analysisTPDescBox = widgets.Label(
             value=''
@@ -154,10 +148,6 @@ class DataSliceSelect():
             value=1,
             disabled=True
         )
-        
-    def update_TPdd(self, time_slices_db):
-        options_copy = time_slices_db.copy()
-        self.analysisTPdd.options = options_copy
 
 class SimpleZoomSlider():
     def __init__(self, plot):
