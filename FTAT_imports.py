@@ -151,11 +151,13 @@ class DataSliceSelect():
 
 class SimpleZoomSlider():
     def __init__(self, plot):
-        #self.minval = int(time.mktime(datetime.utcfromtimestamp(np.datetime64(plot.x_data.min()).astype('O')/1e9).timetuple()))
-        #self.maxval = int(time.mktime(datetime.utcfromtimestamp(np.datetime64(plot.x_data.max()).astype('O')/1e9).timetuple()))
-        self.minval = int(time.mktime(plot.xs.min.timetuple()))
-        self.maxval = int(time.mktime(plot.xs.max.timetuple()))
-        self.delta_time_int = self.maxval-self.minval
+
+
+        self.minval = np.datetime64(plot.x_data_slice_min, 'us')
+        self.maxval = np.datetime64(plot.x_data_slice_max, 'us')
+
+
+        self.delta_time_int = np.timedelta64(self.maxval-self.minval)
         self.my_slider_layout = Layout(max_width='100%', width='80%', height='75px')
         self.zoom_slider= widgets.IntRangeSlider(
             value=[0, 100],
@@ -170,20 +172,13 @@ class SimpleZoomSlider():
         )
      
     def updateScale(self, plot):
-        #self.minval = int(time.mktime(datetime.utcfromtimestamp(np.datetime64(plot.fitted_line.x.min()).astype('O')/1e9).timetuple()))
-        #self.maxval = int(time.mktime(datetime.utcfromtimestamp(np.datetime64(plot.fitted_line.x.max()).astype('O')/1e9).timetuple()))
-        
-        #self.minval = int(time.mktime(plot.xs.min.timetuple()))
-        #self.maxval = int(time.mktime(plot.xs.max.timetuple()))
-        
-        self.minval =  int(time.mktime(datetime.utcfromtimestamp(np.datetime64(plot.x_data_slice_min).astype('O')/1e9).timetuple()))
-        self.maxval =  int(time.mktime(datetime.utcfromtimestamp(np.datetime64(plot.x_data_slice_max).astype('O')/1e9).timetuple()))
-        
-        self.delta_time_int = self.maxval-self.minval
-        plot.xs.min = datetime.fromtimestamp(self.minval + self.zoom_slider.value[0]/100*self.delta_time_int)
-        plot.xs.max = datetime.fromtimestamp(self.minval + self.zoom_slider.value[1]/100*self.delta_time_int)
-        #  TODO - when slider is changed, recalculate the fitted line
-        #  maybe change the plot method so that we do not need to pass the current_plot_data anymore
+        self.minval = np.datetime64(plot.xs.min, 'us') #type datetime.datetime - from bqplot
+        self.maxval = np.datetime64(plot.xs.max, 'us')
+        plot.x_data_slice_min = self.minval
+        plot.x_data_slice_max = self.maxval
+
+
+        self.delta_time_int = np.timedelta64(self.maxval-self.minval)
         
 
 
@@ -239,7 +234,7 @@ class AnalysisPlot(LinePlotBrush):
                           title='No Parameter Selected',
                           layout=Layout(width = '80%'), 
                           interaction=self.brushintsel)
-        self.xs.min=min([mark.x.min() for mark in self.fig.marks])
+        self.xs.min=min([mark.x.min() for mark in self.fig.marks]) #this is datetime.datetime internally to bqplot
         self.xs.max=max([mark.x.max() for mark in self.fig.marks])
         self.fit_statistics = widgets.HTML(
                                         value="Empty <b>Empty</b>",
@@ -250,18 +245,25 @@ class AnalysisPlot(LinePlotBrush):
         
         
     def update_plot(self, current_plot_data, parameter_list, slice_start, slice_end, poly_degree):
+        '''
+        current_plot_data
+        parameter_list
+        slice_start: numpy.datetime64, 'us' - from time_slices_db
+        slice_end: numpy.datetime64, 'us'
+        poly_degrees: int
+        '''
         if parameter_list: #this means the list is not empty
-            self.xs.min = slice_start #analysis_TP_dd.value
+            self.xs.min = slice_start #I can pass a np.datetime64, bqplot converts internally to datetime.datetime
             self.xs.max = slice_end
-            slice_start_index = current_plot_data.index.searchsorted(self.xs.min)
+            slice_start_index = current_plot_data.index.searchsorted(slice_start)
             initial_value = current_plot_data.index[slice_start_index].timestamp()
-            xdata = current_plot_data.iloc[(current_plot_data.index >= self.xs.min) & 
-                                           (current_plot_data.index <= self.xs.max)].index.astype(int).astype(float) \
+            xdata = current_plot_data.iloc[(current_plot_data.index >= slice_start) & 
+                                           (current_plot_data.index <= slice_end)].index.astype(int).astype(float) \
                                            - (initial_value*1e9)
             xdata = xdata / 1e9  ##
             # ydata is going to be the first selected parameter, for now, thus the "0" below.
-            ydata = current_plot_data.iloc[(current_plot_data.index >= self.xs.min) & 
-                                           (current_plot_data.index <= self.xs.max), 0].values
+            ydata = current_plot_data.iloc[(current_plot_data.index >= slice_start) & 
+                                           (current_plot_data.index <= slice_end), 0].values
             linefit = np.polyfit(xdata, ydata, poly_degree)
             fittedx = np.linspace(xdata[0], xdata[-1], len(xdata))
 
@@ -283,37 +285,7 @@ class AnalysisPlot(LinePlotBrush):
             self.fit_statistics.value = stats_string
 ##########
 
-class SimpleZoomSlider():
-    def __init__(self, plot):
 
-        self.minval = int(time.mktime(plot.xs.min.timetuple()))
-        self.maxval = int(time.mktime(plot.xs.max.timetuple()))
-        self.delta_time_int = self.maxval-self.minval
-        self.my_slider_layout = Layout(max_width='100%', width='80%', height='75px')
-        self.zoom_slider= widgets.IntRangeSlider(
-            value=[0, 100],
-            step=1,
-            description='Zoom:',
-            disabled=False,
-            continuous_update=False,
-            orientation='horizontal',
-            readout=True,
-            readout_format='d',
-            layout=self.my_slider_layout
-        )
-     
-    def updateScale(self, plot):
-        
-        self.minval =  int(time.mktime(datetime.utcfromtimestamp(np.datetime64(plot.x_data_slice_min).astype('O')/1e9).timetuple()))
-        self.maxval =  int(time.mktime(datetime.utcfromtimestamp(np.datetime64(plot.x_data_slice_max).astype('O')/1e9).timetuple()))
-        
-        self.delta_time_int = self.maxval-self.minval
-        plot.xs.min = datetime.fromtimestamp(self.minval + self.zoom_slider.value[0]/100*self.delta_time_int)
-        plot.xs.max = datetime.fromtimestamp(self.minval + self.zoom_slider.value[1]/100*self.delta_time_int)
-        #  TODO - when slider is changed, recalculate the fitted line
-        #  maybe change the plot method so that we do not need to pass the current_plot_data anymore
-
-###########################
 
 
 class StripChart(object):
