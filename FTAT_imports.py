@@ -152,10 +152,8 @@ class DataSliceSelect():
 class SimpleZoomSlider():
     def __init__(self, plot):
 
-
         self.minval = np.datetime64(plot.x_data_slice_min, 'us')
         self.maxval = np.datetime64(plot.x_data_slice_max, 'us')
-
 
         self.delta_time_int = np.timedelta64(self.maxval-self.minval)
         self.my_slider_layout = Layout(max_width='100%', width='80%', height='75px')
@@ -171,12 +169,12 @@ class SimpleZoomSlider():
             layout=self.my_slider_layout
         )
      
+    
     def updateScale(self, plot):
         self.minval = np.datetime64(plot.xs.min, 'us') #type datetime.datetime - from bqplot
         self.maxval = np.datetime64(plot.xs.max, 'us')
         plot.x_data_slice_min = self.minval
         plot.x_data_slice_max = self.maxval
-
 
         self.delta_time_int = np.timedelta64(self.maxval-self.minval)
         
