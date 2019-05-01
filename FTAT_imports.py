@@ -1,4 +1,7 @@
 import pandas as pd
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
+
 import numpy as np
 import sys
 from datetime import datetime
@@ -349,6 +352,7 @@ class StripChart(object):
             outbox = Output()
             counter = 1
             myfig = plt.figure(figsize = (16,(len(self.selection_map.map.selected)*4)))
+            myfig.patch.set_edgecolor('w')
             plt.subplots_adjust(hspace = 0.0)
             #plt.title(self.ts_title)
             with outbox:
@@ -356,7 +360,6 @@ class StripChart(object):
                     strip_chart_y_data = self.dataframe.iloc[(self.dataframe.index >= self.slice_start) & 
                                                (self.dataframe.index <= self.slice_end)][selection].values
                     ax = myfig.add_subplot(len(self.selection_map.map.selected), 1, counter)
-
                     ax.plot(self.strip_chart_x_data, strip_chart_y_data)
                     plt.ylabel(selection)
                     plt.grid(True)
@@ -368,7 +371,8 @@ class StripChart(object):
                 #ac = ab[0]
                 #ac.tick_params(bottom=False, top = False, left = False, right = False)
                 #ac.tick_params(labelbottom=False, labeltop = False, labelleft = False, labelright = False)
-                plt.show()
+                print('To save figure, hold SHIFT and Right Click...Save image as...')
+                plt.show();
 
             # Time Slices Analysis Section
             strip_chart_items = [plot_button, matplotlib_plot_button]
