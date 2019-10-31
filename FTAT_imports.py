@@ -4,10 +4,8 @@ register_matplotlib_converters()
 
 import numpy as np
 import sys
-import datetime
+from datetime import datetime
 import time
-import calendar
-import h5py
 
 from collections import OrderedDict
 
