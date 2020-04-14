@@ -37,10 +37,15 @@ class ParameterMap:
         self.sub_sampled_data = sub_sampled_data
         self.map_names = list(self.sub_sampled_data.columns)
         self.map_codes = [i for i in range(len(self.map_names))]
+        '''
         self.map = MarketMap(names=self.map_names,      
                                layout=Layout(min_width='50px', min_height='70px'),
                                  enable_hover=False, cols=3,
                             map_margin={'top':50, 'bottom':0, 'left':0, 'right':25})
+        '''
+        self.map = MarketMap(names=self.map_names,      
+                               layout=Layout(enable_hover=False, rows=16, min_aspect_ratio=0.8))
+    
 
         self.map.colors = [color]
         self.map.font_style = {'font-size': '10px', 'fill':'white'}
@@ -330,23 +335,15 @@ class StripChart(object):
     
     def _update(self, box):
         
-        def on_click_update_SC(b):
-            self.matplotlib_button_clicked = False
-            self._update_charts()
-            self._update(box)
-        
         def on_click_final_plot(b):
             self.matplotlib_button_clicked = True
             self._update_charts()
             self._update(box)
         
-        plot_button = widgets.Button(description='Draft Plot', background_color='#d0d0ff', layout=Layout(width='50%', height='35px'))
-        plot_button.on_click(on_click_update_SC)
         matplotlib_plot_button = widgets.Button(description='Final Plot', background_color='#1f9b1d', layout=Layout(width='50%', height='35px'))
         matplotlib_plot_button.on_click(on_click_final_plot)
         plotlist = []
         if self.matplotlib_button_clicked:
-            
             plt.ioff()
             plt.clf()
             outbox = Output()
@@ -354,7 +351,6 @@ class StripChart(object):
             myfig = plt.figure(figsize = (16,(len(self.selection_map.map.selected)*4)))
             myfig.patch.set_edgecolor('w')
             plt.subplots_adjust(hspace = 0.0)
-            #plt.title(self.ts_title)
             with outbox:
                 for selection in self.selection_map.map.selected:
                     strip_chart_y_data = self.dataframe.iloc[(self.dataframe.index >= self.slice_start) & 
@@ -363,43 +359,17 @@ class StripChart(object):
                     ax.plot(self.strip_chart_x_data, strip_chart_y_data)
                     plt.ylabel(selection)
                     plt.grid(True)
-                    if counter < len(self.selection_map.map.selected):
-                        #ax.axes.get_xaxis().set_ticks([])
-                        pass
                     counter += 1
-                #ab = myfig.get_axes()
-                #ac = ab[0]
-                #ac.tick_params(bottom=False, top = False, left = False, right = False)
-                #ac.tick_params(labelbottom=False, labeltop = False, labelleft = False, labelright = False)
                 print('To save figure, hold SHIFT and Right Click...Save image as...')
                 plt.show();
 
             # Time Slices Analysis Section
-            strip_chart_items = [plot_button, matplotlib_plot_button]
+            strip_chart_items = [matplotlib_plot_button]
             strip_chart_items.insert(1, widgets.Label(self.msg))
             strip_chart_items.append(outbox)
             box.children = strip_chart_items
-            
         else:
-            
-            counter = 0
-            for selection in self.selection_map.map.selected:
-                strip_chart_y_data = self.dataframe.iloc[(self.dataframe.index >= self.slice_start) & 
-                                           (self.dataframe.index <= self.slice_end)][selection].values
-                plotlist.append(LinePlot(self.strip_chart_x_data, strip_chart_y_data))
-                plotlist[counter].fig.title = selection
-                counter += 1
-
-            # Time Slices Analysis Section
-            strip_chart_items = [plot_button, matplotlib_plot_button]
-            for plots in plotlist:
-                plots.xs.min = None
-                plots.xs.max = None
-                plots.ys.min = None
-                plots.ys.max = None
-                plots.xax.tick_format = '%M:%S.%L'
-                strip_chart_items.append(plots.fig)
-            strip_chart_items.insert(1, widgets.Label(self.msg))
+            strip_chart_items = [matplotlib_plot_button]
             box.children = strip_chart_items
 
 ###########################
