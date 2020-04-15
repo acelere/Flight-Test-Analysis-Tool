@@ -29,6 +29,38 @@ import matplotlib.pyplot as plt
 import os
 
 
+#functions
+def data_slicer(data_stream, slice_start_time, slice_end_time):
+    #helper function to return the sliced data
+    #if start/stop outside range, return full data
+    #data_stream is a pandas df
+    # start/stop times are datetime64 values
+    #the reason to have the selected_slice is growth capability
+    #in the future, I want to maybe use these times to slice a movie
+    #therefore I cannot store/lookup the index of the data. Need times.
+    
+    if slice_start_time < data_stream.index.values[0]:
+        slice_start_time = data_stream.index.values[0]
+    if (slice_end_time > data_stream.index.values[-1]) or (slice_end_time <= slice_start_time) :
+        slice_end_time = data_stream.index.values[-1]
+    slice_start_index = data_stream.index.searchsorted(slice_start_time)
+    slice_end_index = data_stream.index.searchsorted(slice_end_time)
+    sliced_data = data_stream.iloc[slice_start_index:slice_end_index]
+    selected_slice = [sliced_data.index.values[0], sliced_data.index.values[-1]]
+    return sliced_data, selected_slice
+
+def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, tz_slider, zoom_slider):
+    
+    delta_time = np.timedelta64(np.datetime64(plot_object.x_data_slice_max, 'us') - np.datetime64(plot_object.x_data_slice_min, 'us'))
+    new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.zoom_slider.value[0]/100*delta_time).astype(datetime)
+    new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.zoom_slider.value[1]/100*delta_time).astype(datetime)
+    
+    plot_object.update_plot(current_plot_data, slicemap_map_selected, 
+                              np.datetime64(new_xs_min, 'us'),
+                              np.datetime64(new_xs_max, 'us'),
+                              poly_order, 
+                              tz_slider)
+
 # parameter map class
 class ParameterMap:
     def __init__(self, sub_sampled_data, color, title):
