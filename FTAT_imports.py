@@ -29,7 +29,6 @@ import matplotlib.pyplot as plt
 import os
 
 
-
 # parameter map class
 class ParameterMap:
     def __init__(self, sub_sampled_data, color, title):
@@ -51,8 +50,6 @@ class ParameterMap:
         self.map.font_style = {'font-size': '10px', 'fill':'white'}
         self.map.title = title
         self.map.title_style = {'fill': 'Red'}
-
-#######
 
 class sliceSelectDialog():
     def __init__(self, current_plot_data):
@@ -185,14 +182,12 @@ class SimpleZoomSlider():
         plot.x_data_slice_max = self.maxval
 
         self.delta_time_int = np.timedelta64(self.maxval-self.minval)
-        
-
 
 
 ########
 class LinePlot:
     def __init__(self, x_data, y_data):
-        self.x_data = x_data
+        self.x_data = x_data #this is comming in as np.datetime64
         self.y_data = y_data
         # scales
         self.xs = DateScale()
@@ -213,8 +208,8 @@ class LinePlot:
 
         self.fig = Figure(marks=[self.line], axes=[self.xax, self.yax], layout=Layout(width = '80%'))
 ########
-        
-        
+
+
 ########
 class LinePlotBrush(LinePlot):
     def __init__(self, x_data, y_data):
@@ -227,7 +222,7 @@ class LinePlotBrush(LinePlot):
 
 ########
 class AnalysisPlot(LinePlotBrush):
-    def __init__(self, x_data, y_data, time_slices_db):
+    def __init__(self, x_data, y_data, tz_slider):
         super().__init__(x_data, y_data)
         self.x_fitted_data = x_data
         self.y_fitted_data = y_data
@@ -240,8 +235,8 @@ class AnalysisPlot(LinePlotBrush):
                           title='No Parameter Selected',
                           layout=Layout(width = '80%'), 
                           interaction=self.brushintsel)
-        self.xs.min=min([mark.x.min() for mark in self.fig.marks]) #this is datetime.datetime internally to bqplot
-        self.xs.max=max([mark.x.max() for mark in self.fig.marks])
+        self.xs.min=min([mark.x.min() for mark in self.fig.marks]) + np.timedelta64(tz_slider, 'h') #this is datetime.datetime internally to bqplot
+        self.xs.max=max([mark.x.max() for mark in self.fig.marks]) + np.timedelta64(tz_slider, 'h')
         self.fit_statistics = widgets.HTML(
                                         value="Empty <b>Empty</b>",
                                         placeholder='Poly Coefs',
@@ -250,7 +245,7 @@ class AnalysisPlot(LinePlotBrush):
         self.fit_statistics.value = 'Empty'
         
         
-    def update_plot(self, current_plot_data, parameter_list, slice_start, slice_end, poly_degree):
+    def update_plot(self, current_plot_data, parameter_list, slice_start, slice_end, poly_degree, tz_slider):
         '''
         current_plot_data
         parameter_list
@@ -259,8 +254,8 @@ class AnalysisPlot(LinePlotBrush):
         poly_degrees: int
         '''
         if parameter_list: #this means the list is not empty
-            self.xs.min = slice_start #I can pass a np.datetime64, bqplot converts internally to datetime.datetime
-            self.xs.max = slice_end
+            self.xs.min = slice_start + np.timedelta64(tz_slider, 'h') #I can pass a np.datetime64, bqplot converts internally to datetime.datetime
+            self.xs.max = slice_end + np.timedelta64(tz_slider, 'h')
             slice_start_index = current_plot_data.index.searchsorted(slice_start)
             initial_value = current_plot_data.index[slice_start_index].timestamp()
             xdata = current_plot_data.iloc[(current_plot_data.index >= slice_start) & 
@@ -372,7 +367,7 @@ class StripChart(object):
             strip_chart_items = [matplotlib_plot_button]
             box.children = strip_chart_items
 
-###########################
+# ##########################
 # File Browser Interface
 
 # from:
