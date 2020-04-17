@@ -68,15 +68,11 @@ class ParameterMap:
         self.sub_sampled_data = sub_sampled_data
         self.map_names = list(self.sub_sampled_data.columns)
         self.map_codes = [i for i in range(len(self.map_names))]
-        '''
+        
         self.map = MarketMap(names=self.map_names,      
                                layout=Layout(min_width='50px', min_height='70px'),
                                  enable_hover=False, cols=3,
                             map_margin={'top':50, 'bottom':0, 'left':0, 'right':25})
-        '''
-        self.map = MarketMap(names=self.map_names,      
-                               layout=Layout(enable_hover=False, rows=16, min_aspect_ratio=0.8))
-    
 
         self.map.colors = [color]
         self.map.font_style = {'font-size': '10px', 'fill':'white'}
