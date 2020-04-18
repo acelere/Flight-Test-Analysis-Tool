@@ -49,6 +49,52 @@ def data_slicer(data_stream, slice_start_time, slice_end_time):
     selected_slice = [sliced_data.index.values[0], sliced_data.index.values[-1]]
     return sliced_data, selected_slice
 
+
+def lib_detail_plot_update_brush(*args, **kwargs):
+    #this call back needs to:
+    # get the selected TS from the brush
+    # update the detail plot with the "zoomed-in" data
+    
+    current_plot_data = kwargs.get('cpt', None)
+    selected_slice= kwargs.get('selsl', None)
+    detail_plot = kwargs.get('detplt', None)
+    slice_plot = kwargs.get('slcplt', None)
+    slicebox = kwargs.get('slcbx', None)
+    detail_plot_stats = kwargs.get('dtstats', None)
+    
+    ##### below, INSTEAD OF tz_slider, IT WOULD BE NICE IF THE TIMEZONE DETECTION WAS AUTOMATIC
+    if slice_plot.brushintsel.selected is not None:
+        if slice_plot.brushintsel.selected.size != 0:
+            #conversion to pd.to_datetime necessary for python 3.6 compat
+            #if I use np.datetime64(slice_plot.brushintsel.selected[0]), I get a deprecation error
+            #so I need to go to pd.to_datetime and then back to np.datetime64.
+            #what a mess...
+            #slice_start_time = np.datetime64(pd.to_datetime(slice_plot.brushintsel.selected[0]) - np.timedelta64((tz_slider.value), 'h'), 'us')
+            #slice_end_time = np.datetime64(pd.to_datetime(slice_plot.brushintsel.selected[-1]) - np.timedelta64((tz_slider.value), 'h'), 'us')
+            
+            slice_start_time = slice_plot.brushintsel.selected[0]
+            slice_end_time = slice_plot.brushintsel.selected[-1]
+
+            
+
+            sliced_data, selected_slice = data_slicer(current_plot_data, slice_start_time, slice_end_time)
+
+            detail_plot.line.x = sliced_data.index.values
+            
+            # getting empty data even after all the checks above... had to add this one more
+            if not sliced_data.empty:
+                detail_plot.line.y = np.transpose(sliced_data)
+
+            detail_plot_stats.value = sliced_data.describe().to_html()
+            slicebox.update_values(slice_start_time, slice_end_time)
+
+
+
+
+
+
+
+
 def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, tz_slider, zoom_slider):
     
     delta_time = np.timedelta64(np.datetime64(plot_object.x_data_slice_max, 'us') - np.datetime64(plot_object.x_data_slice_min, 'us'))
@@ -68,15 +114,11 @@ class ParameterMap:
         self.sub_sampled_data = sub_sampled_data
         self.map_names = list(self.sub_sampled_data.columns)
         self.map_codes = [i for i in range(len(self.map_names))]
-        '''
+        
         self.map = MarketMap(names=self.map_names,      
                                layout=Layout(min_width='50px', min_height='70px'),
                                  enable_hover=False, cols=3,
                             map_margin={'top':50, 'bottom':0, 'left':0, 'right':25})
-        '''
-        self.map = MarketMap(names=self.map_names,      
-                               layout=Layout(enable_hover=False, rows=16, min_aspect_ratio=0.8))
-    
 
         self.map.colors = [color]
         self.map.font_style = {'font-size': '10px', 'fill':'white'}
