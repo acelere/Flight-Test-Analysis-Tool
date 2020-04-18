@@ -116,6 +116,57 @@ def lib_on_plot_button_clicked(b, **kwargs):
     
 
 
+    
+def lib_on_saveTS_button_clicked(b, **kwargs):
+    
+    current_plot_data = kwargs.get('cpt', None)
+    detail_plot = kwargs.get('detplt', None)
+    slice_plot = kwargs.get('slcplt', None)
+    time_slices_db = kwargs.get('tsdb', None)
+    TP_number_box = kwargs.get('tpnb', None)
+    TS_message = kwargs.get('tsmsg', None)
+    TP_desc_box = kwargs.get('tpdescb', None)
+    TP_saved_dd = kwargs.get('tpsavdd', None)
+    time_slices_db_radio = kwargs.get('tsdbrb', None)
+    
+
+    
+    if str(TP_number_box.value) in time_slices_db:
+        TS_message.value = 'TP# {} already in db, choose a different one'.format(TP_number_box.value)
+    else:
+        TS_message.value = 'added TP {}'.format(TP_number_box.value)
+        if detail_plot.xs.min:  # if the scale is None, go to ELSE!
+            time_slices_db[str(TP_number_box.value)] = [TP_desc_box.value, np.datetime64(detail_plot.xs.min, 'us')
+                                                        , np.datetime64(detail_plot.xs.max, 'us')]
+        else:
+            slice_start_time = slice_plot.brushintsel.selected[0]
+            slice_end_time = slice_plot.brushintsel.selected[-1]
+
+            sliced_data, selected_slice = data_slicer(current_plot_data, slice_start_time, slice_end_time)
+            time_slices_db[str(TP_number_box.value)] = [TP_desc_box.value, selected_slice[0], selected_slice[-1]]
+        TP_saved_dd.options = list(dict.keys(time_slices_db))
+        time_slices_db_radio.options = list(dict.keys(time_slices_db))    
+    
+    
+
+    
+    
+def lib_on_delTS_button_clicked(b, **kwargs):
+    
+    time_slices_db = kwargs.get('tsdb', None)
+    TS_message = kwargs.get('tsmsg', None)
+    TP_saved_dd = kwargs.get('tpsavdd', None)
+    time_slices_db_radio = kwargs.get('tsdbrb', None)
+    
+    if TP_saved_dd.value in time_slices_db:
+        TS_message.value = 'Deleted'
+        del time_slices_db[TP_saved_dd.value]
+        TP_saved_dd.options = list(dict.keys(time_slices_db))
+        time_slices_db_radio.options = list(dict.keys(time_slices_db))
+    else:
+        TS_message.value = 'trying to delete nothing?'    
+    
+    
 
 
     
