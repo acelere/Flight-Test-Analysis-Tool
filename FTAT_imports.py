@@ -65,17 +65,9 @@ def lib_detail_plot_update_brush(*args, **kwargs):
     ##### below, INSTEAD OF tz_slider, IT WOULD BE NICE IF THE TIMEZONE DETECTION WAS AUTOMATIC
     if slice_plot.brushintsel.selected is not None:
         if slice_plot.brushintsel.selected.size != 0:
-            #conversion to pd.to_datetime necessary for python 3.6 compat
-            #if I use np.datetime64(slice_plot.brushintsel.selected[0]), I get a deprecation error
-            #so I need to go to pd.to_datetime and then back to np.datetime64.
-            #what a mess...
-            #slice_start_time = np.datetime64(pd.to_datetime(slice_plot.brushintsel.selected[0]) - np.timedelta64((tz_slider.value), 'h'), 'us')
-            #slice_end_time = np.datetime64(pd.to_datetime(slice_plot.brushintsel.selected[-1]) - np.timedelta64((tz_slider.value), 'h'), 'us')
             
             slice_start_time = slice_plot.brushintsel.selected[0]
             slice_end_time = slice_plot.brushintsel.selected[-1]
-
-            
 
             sliced_data, selected_slice = data_slicer(current_plot_data, slice_start_time, slice_end_time)
 
@@ -90,10 +82,45 @@ def lib_detail_plot_update_brush(*args, **kwargs):
 
 
 
+def lib_on_plot_button_clicked(b, **kwargs):
+
+    
+    current_plot_data = kwargs.get('cpt', None)
+    detail_plot = kwargs.get('detplt', None)
+    slicebox = kwargs.get('slcbx', None)
+    detail_plot_stats = kwargs.get('dtstats', None)
+    
+    slice_start_index = 0
+
+    current_start_time = current_plot_data.index[slice_start_index]
+
+    
+    new_start_time = current_start_time.replace(hour=slicebox.start_hour_box.value, 
+                                                minute=slicebox.start_minute_box.value,
+                                                second=slicebox.start_second_box.value)
+
+    new_end_time = current_start_time.replace(hour=slicebox.end_hour_box.value, 
+                                              minute=slicebox.end_minute_box.value,
+                                              second=slicebox.end_second_box.value)
+    
+    slice_start_index = current_plot_data.index.searchsorted(new_start_time)
+    slice_end_index = current_plot_data.index.searchsorted(new_end_time)
+    
+    sliced_data = current_plot_data.iloc[slice_start_index:slice_end_index]
+    selected_slice = [sliced_data.index.values[0], sliced_data.index.values[-1]]
+    
+    detail_plot.line.x = sliced_data.index.values
+    detail_plot.line.y = np.transpose(sliced_data)
+    
+    detail_plot_stats.value = sliced_data.describe().to_html()
+    
 
 
 
 
+    
+    
+    
 
 def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, tz_slider, zoom_slider):
     
