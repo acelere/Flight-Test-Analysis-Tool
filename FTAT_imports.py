@@ -232,7 +232,31 @@ def lib_save_slices(**kwargs):
     
     
     
+def lib_on_click_time_slices_db_radio(change, **kwargs):
+    
+    current_plot_data = kwargs.get('cpt', None)
+    analysis_plot = kwargs.get('anplt', None)
+    time_slices_db = kwargs.get('tsdb', None)
+    poly_order = kwargs.get('pord', None)
+    slicemap = kwargs.get('slcmap', None)
+    tz_slider = kwargs.get('tzsld', None)
+    
+    #everytime we select a slice, the analysis plot needs to be updated
+    #using the parameters selected on the map and the TS from the dictionary
 
+    if (change['type'] == 'change') and (change['name'] == 'value') and (len(slicemap.map.selected) != 0) and (change['new'] != None):
+        analysis_plot.x_data_slice_min = time_slices_db[change['new']][1]
+        analysis_plot.x_data_slice_max = time_slices_db[change['new']][2]
+        analysis_plot.update_plot(current_plot_data, slicemap.map.selected, time_slices_db[change['new']][1],
+                                  time_slices_db[change['new']][2], poly_order, tz_slider.value)
+
+
+    
+    
+    
+    
+    
+    
     
     
     
