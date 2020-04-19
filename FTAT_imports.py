@@ -27,6 +27,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 import os
+import subprocess
 
 
 #functions
@@ -168,6 +169,69 @@ def lib_on_delTS_button_clicked(b, **kwargs):
     
     
 
+    
+def lib_save_slices(**kwargs):
+    
+    tp_dict = kwargs.get('tsdb', None)
+    save_all_parameters = kwargs.get('svall', None)
+    raw_data = kwargs.get('rawdt', None)
+    slicemap = kwargs.get('slcmap', None)
+    save_feedback = kwargs.get('svfb', None)
+
+    filepath = '/home/jovyan/work/'
+    
+    #creeate the TP data files
+    filename_collector = []
+    for key in tp_dict.keys():
+        current_value = tp_dict[key]
+        
+        filename1 = filepath + 'TP_' +  str(key) + '_' + current_value[0] + '.csv'
+        filename2 = filepath + 'TP_' +  str(key) + '_' + current_value[0] + '_' + 'stats' + '.csv'
+        
+        filename_collector.append(filename1)
+        filename_collector.append(filename2)
+
+        slice_start = current_value[1]
+        slice_end = current_value[2]
+        sliced_data = raw_data.iloc[(raw_data.index >= slice_start) & 
+                                        (raw_data.index <= slice_end)]
+        sliced_data_stats = pd.DataFrame([sliced_data.mean(), sliced_data.std()], index=['mean','std'])
+
+        if save_all_parameters.value:
+            sliced_data.to_csv(filename1)
+            sliced_data_stats.to_csv(filename2)
+        else:
+            sliced_data[slicemap.map.selected].to_csv(filename1)
+            sliced_data_stats[slicemap.map.selected].to_csv(filename2)
+
+    # zipping it all
+    #rm old zipped file
+    zip_filename = filepath+'TP_zipped.zip'
+    bashCommand = f"rm {zip_filename}"
+    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+    output, error = process.communicate()
+
+    #zip files
+    process = subprocess.Popen(['zip',zip_filename] + filename_collector, stdout=subprocess.PIPE)
+    output, error = process.communicate()
+    if error:
+        file_msg = error
+    elif not filename_collector:
+        file_msg = 'nothing saved, no test points sliced'
+    else:
+        file_msg = 'files saved to disk'
+    
+    #delete data files
+    process = subprocess.Popen(['rm'] + filename_collector, stdout=subprocess.PIPE)
+    output, error = process.communicate()
+    
+    save_feedback.value = file_msg 
+    
+    
+    
+    
+    
+    
 
     
     
