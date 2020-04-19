@@ -94,7 +94,6 @@ def lib_on_plot_button_clicked(b, **kwargs):
     slice_start_index = 0
 
     current_start_time = current_plot_data.index[slice_start_index]
-
     
     new_start_time = current_start_time.replace(hour=slicebox.start_hour_box.value, 
                                                 minute=slicebox.start_minute_box.value,
@@ -136,15 +135,10 @@ def lib_on_saveTS_button_clicked(b, **kwargs):
         TS_message.value = 'TP# {} already in db, choose a different one'.format(TP_number_box.value)
     else:
         TS_message.value = 'added TP {}'.format(TP_number_box.value)
-        if detail_plot.xs.min:  # if the scale is None, go to ELSE!
-            time_slices_db[str(TP_number_box.value)] = [TP_desc_box.value, np.datetime64(detail_plot.xs.min, 'us')
-                                                        , np.datetime64(detail_plot.xs.max, 'us')]
-        else:
-            slice_start_time = slice_plot.brushintsel.selected[0]
-            slice_end_time = slice_plot.brushintsel.selected[-1]
 
-            sliced_data, selected_slice = data_slicer(current_plot_data, slice_start_time, slice_end_time)
-            time_slices_db[str(TP_number_box.value)] = [TP_desc_box.value, selected_slice[0], selected_slice[-1]]
+        time_slices_db[str(TP_number_box.value)] = [TP_desc_box.value, detail_plot.line.x[0],\
+                                                        detail_plot.line.x[-1]]
+
         TP_saved_dd.options = list(dict.keys(time_slices_db))
         time_slices_db_radio.options = list(dict.keys(time_slices_db))    
     
@@ -244,7 +238,7 @@ def lib_on_click_time_slices_db_radio(change, **kwargs):
     #everytime we select a slice, the analysis plot needs to be updated
     #using the parameters selected on the map and the TS from the dictionary
 
-    if (change['type'] == 'change') and (change['name'] == 'value') and (len(slicemap.map.selected) != 0) and (change['new'] != None):
+    if (change['type'] == 'change') and (change['name'] == 'value') and (len(slicemap.map.selected) != 0) and (change['new'] != None):       
         analysis_plot.x_data_slice_min = time_slices_db[change['new']][1]
         analysis_plot.x_data_slice_max = time_slices_db[change['new']][2]
         analysis_plot.update_plot(current_plot_data, slicemap.map.selected, time_slices_db[change['new']][1],
@@ -254,12 +248,24 @@ def lib_on_click_time_slices_db_radio(change, **kwargs):
     
     
     
+# slice trim to zoomed figure logic
+def slice_trim(**kwargs):
     
-    
-    
-    
-    
-    
+    zoom_slider = kwargs.get('zsld', None)
+    analysis_plot = kwargs.get('anplt', None)
+    time_slices_db = kwargs.get('tsdb', None)
+    time_slices_db_radio = kwargs.get('tsdbr', None)
+
+    delta_time = np.timedelta64(np.datetime64(analysis_plot.x_data_slice_max, 'us') - np.datetime64(analysis_plot.x_data_slice_min, 'us'))
+    min_delta = np.array((zoom_slider.zoom_slider.value[0]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
+    max_delta = np.array((zoom_slider.zoom_slider.value[1]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
+    current_slice = time_slices_db.get(time_slices_db_radio.value)
+    current_slice[2] = current_slice[1] + max_delta
+    current_slice[1] = current_slice[1] + min_delta
+    time_slices_db[time_slices_db_radio.value] = current_slice
+    #zoom_slider.zoom_slider.resetSlider()
+
+
 
 def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, tz_slider, zoom_slider):
     
@@ -422,6 +428,10 @@ class SimpleZoomSlider():
         plot.x_data_slice_max = self.maxval
 
         self.delta_time_int = np.timedelta64(self.maxval-self.minval)
+        
+    def resetSlider(self):
+        self.zoom_slider.value[0] = 0
+        self.zoom_slider.value[1] = 100
 
 
 ########
