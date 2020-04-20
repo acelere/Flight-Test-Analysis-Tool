@@ -134,13 +134,12 @@ def lib_on_saveTS_button_clicked(b, **kwargs):
     if str(TP_number_box.value) in time_slices_db:
         TS_message.value = 'TP# {} already in db, choose a different one'.format(TP_number_box.value)
     else:
-        TS_message.value = 'added TP {}'.format(TP_number_box.value)
-
         time_slices_db[str(TP_number_box.value)] = [TP_desc_box.value, detail_plot.line.x[0],\
                                                         detail_plot.line.x[-1]]
 
         TP_saved_dd.options = list(dict.keys(time_slices_db))
-        time_slices_db_radio.options = list(dict.keys(time_slices_db))    
+        time_slices_db_radio.options = list(dict.keys(time_slices_db))
+        TS_message.value = 'added TP {}'.format(TP_number_box.value)
     
     
 
@@ -234,6 +233,7 @@ def lib_on_click_time_slices_db_radio(change, **kwargs):
     poly_order = kwargs.get('pord', None)
     slicemap = kwargs.get('slcmap', None)
     tz_slider = kwargs.get('tzsld', None)
+    zoom_slider = kwargs.get('zsld', None)
     
     #everytime we select a slice, the analysis plot needs to be updated
     #using the parameters selected on the map and the TS from the dictionary
@@ -243,6 +243,7 @@ def lib_on_click_time_slices_db_radio(change, **kwargs):
         analysis_plot.x_data_slice_max = time_slices_db[change['new']][2]
         analysis_plot.update_plot(current_plot_data, slicemap.map.selected, time_slices_db[change['new']][1],
                                   time_slices_db[change['new']][2], poly_order, tz_slider)
+        zoom_slider.resetSlider()
 
 
     
