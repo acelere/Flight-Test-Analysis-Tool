@@ -27,6 +27,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 import os
+import subprocess
 
 
 #functions
@@ -49,11 +50,238 @@ def data_slicer(data_stream, slice_start_time, slice_end_time):
     selected_slice = [sliced_data.index.values[0], sliced_data.index.values[-1]]
     return sliced_data, selected_slice
 
+
+def lib_detail_plot_update_brush(*args, **kwargs):
+    #this call back needs to:
+    # get the selected TS from the brush
+    # update the detail plot with the "zoomed-in" data
+    
+    current_plot_data = kwargs.get('cpt', None)
+    selected_slice= kwargs.get('selsl', None)
+    detail_plot = kwargs.get('detplt', None)
+    slice_plot = kwargs.get('slcplt', None)
+    slicebox = kwargs.get('slcbx', None)
+    detail_plot_stats = kwargs.get('dtstats', None)
+    
+    ##### below, INSTEAD OF tz_slider, IT WOULD BE NICE IF THE TIMEZONE DETECTION WAS AUTOMATIC
+    if slice_plot.brushintsel.selected is not None:
+        if slice_plot.brushintsel.selected.size != 0:
+            
+            slice_start_time = slice_plot.brushintsel.selected[0]
+            slice_end_time = slice_plot.brushintsel.selected[-1]
+
+            sliced_data, selected_slice = data_slicer(current_plot_data, slice_start_time, slice_end_time)
+
+            detail_plot.line.x = sliced_data.index.values
+            
+            # getting empty data even after all the checks above... had to add this one more
+            if not sliced_data.empty:
+                detail_plot.line.y = np.transpose(sliced_data)
+
+            detail_plot_stats.value = sliced_data.describe().to_html()
+            slicebox.update_values(slice_start_time, slice_end_time)
+
+
+
+def lib_on_plot_button_clicked(b, **kwargs):
+
+    
+    current_plot_data = kwargs.get('cpt', None)
+    detail_plot = kwargs.get('detplt', None)
+    slicebox = kwargs.get('slcbx', None)
+    detail_plot_stats = kwargs.get('dtstats', None)
+    
+    slice_start_index = 0
+
+    current_start_time = current_plot_data.index[slice_start_index]
+    
+    new_start_time = current_start_time.replace(hour=slicebox.start_hour_box.value, 
+                                                minute=slicebox.start_minute_box.value,
+                                                second=slicebox.start_second_box.value)
+
+    new_end_time = current_start_time.replace(hour=slicebox.end_hour_box.value, 
+                                              minute=slicebox.end_minute_box.value,
+                                              second=slicebox.end_second_box.value)
+    
+    slice_start_index = current_plot_data.index.searchsorted(new_start_time)
+    slice_end_index = current_plot_data.index.searchsorted(new_end_time)
+    
+    sliced_data = current_plot_data.iloc[slice_start_index:slice_end_index]
+    selected_slice = [sliced_data.index.values[0], sliced_data.index.values[-1]]
+    
+    detail_plot.line.x = sliced_data.index.values
+    detail_plot.line.y = np.transpose(sliced_data)
+    
+    detail_plot_stats.value = sliced_data.describe().to_html()
+    
+
+
+    
+def lib_on_saveTS_button_clicked(b, **kwargs):
+    
+    current_plot_data = kwargs.get('cpt', None)
+    detail_plot = kwargs.get('detplt', None)
+    slice_plot = kwargs.get('slcplt', None)
+    time_slices_db = kwargs.get('tsdb', None)
+    TP_number_box = kwargs.get('tpnb', None)
+    TS_message = kwargs.get('tsmsg', None)
+    TP_desc_box = kwargs.get('tpdescb', None)
+    TP_saved_dd = kwargs.get('tpsavdd', None)
+    time_slices_db_radio = kwargs.get('tsdbrb', None)
+    
+
+    
+    if str(TP_number_box.value) in time_slices_db:
+        TS_message.value = 'TP# {} already in db, choose a different one'.format(TP_number_box.value)
+    else:
+        time_slices_db[str(TP_number_box.value)] = [TP_desc_box.value, detail_plot.line.x[0],\
+                                                        detail_plot.line.x[-1]]
+
+        TP_saved_dd.options = list(dict.keys(time_slices_db))
+        time_slices_db_radio.options = list(dict.keys(time_slices_db))
+        TS_message.value = 'added TP {}'.format(TP_number_box.value)
+    
+    
+
+    
+    
+def lib_on_delTS_button_clicked(b, **kwargs):
+    
+    time_slices_db = kwargs.get('tsdb', None)
+    TS_message = kwargs.get('tsmsg', None)
+    TP_saved_dd = kwargs.get('tpsavdd', None)
+    time_slices_db_radio = kwargs.get('tsdbrb', None)
+    
+    if TP_saved_dd.value in time_slices_db:
+        TS_message.value = 'Deleted'
+        del time_slices_db[TP_saved_dd.value]
+        TP_saved_dd.options = list(dict.keys(time_slices_db))
+        time_slices_db_radio.options = list(dict.keys(time_slices_db))
+    else:
+        TS_message.value = 'trying to delete nothing?'    
+    
+    
+
+    
+def lib_save_slices(**kwargs):
+    
+    tp_dict = kwargs.get('tsdb', None)
+    save_all_parameters = kwargs.get('svall', None)
+    raw_data = kwargs.get('rawdt', None)
+    slicemap = kwargs.get('slcmap', None)
+    save_feedback = kwargs.get('svfb', None)
+
+    filepath = '/home/jovyan/work/'
+    
+    #creeate the TP data files
+    filename_collector = []
+    for key in tp_dict.keys():
+        current_value = tp_dict[key]
+        
+        filename1 = filepath + 'TP_' +  str(key) + '_' + current_value[0] + '.csv'
+        filename2 = filepath + 'TP_' +  str(key) + '_' + current_value[0] + '_' + 'stats' + '.csv'
+        
+        filename_collector.append(filename1)
+        filename_collector.append(filename2)
+
+        slice_start = current_value[1]
+        slice_end = current_value[2]
+        sliced_data = raw_data.iloc[(raw_data.index >= slice_start) & 
+                                        (raw_data.index <= slice_end)]
+        sliced_data_stats = pd.DataFrame([sliced_data.mean(), sliced_data.std()], index=['mean','std'])
+
+        if save_all_parameters.value:
+            sliced_data.to_csv(filename1)
+            sliced_data_stats.to_csv(filename2)
+        else:
+            sliced_data[slicemap.map.selected].to_csv(filename1)
+            sliced_data_stats[slicemap.map.selected].to_csv(filename2)
+
+    # zipping it all
+    #rm old zipped file
+    zip_filename = filepath+'TP_zipped.zip'
+    bashCommand = f"rm {zip_filename}"
+    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+    output, error = process.communicate()
+
+    #zip files
+    process = subprocess.Popen(['zip',zip_filename] + filename_collector, stdout=subprocess.PIPE)
+    output, error = process.communicate()
+    if error:
+        file_msg = error
+    elif not filename_collector:
+        file_msg = 'nothing saved, no test points sliced'
+    else:
+        file_msg = 'files saved to disk'
+    
+    #delete data files
+    process = subprocess.Popen(['rm'] + filename_collector, stdout=subprocess.PIPE)
+    output, error = process.communicate()
+    
+    save_feedback.value = file_msg 
+    
+    
+    
+    
+    
+    
+def lib_on_click_time_slices_db_radio(change, **kwargs):
+    
+    current_plot_data = kwargs.get('cpt', None)
+    analysis_plot = kwargs.get('anplt', None)
+    time_slices_db = kwargs.get('tsdb', None)
+    poly_order = kwargs.get('pord', None)
+    slicemap = kwargs.get('slcmap', None)
+    tz_slider = kwargs.get('tzsld', None)
+    zoom_slider = kwargs.get('zsld', None)
+    
+    #everytime we select a slice, the analysis plot needs to be updated
+    #using the parameters selected on the map and the TS from the dictionary
+
+    if (change['type'] == 'change') and (change['name'] == 'value') and (len(slicemap.map.selected) != 0) and (change['new'] != None):       
+        analysis_plot.x_data_slice_min = time_slices_db[change['new']][1]
+        analysis_plot.x_data_slice_max = time_slices_db[change['new']][2]
+        analysis_plot.update_plot(current_plot_data, slicemap.map.selected, time_slices_db[change['new']][1],
+                                  time_slices_db[change['new']][2], poly_order, tz_slider)
+        zoom_slider.resetSlider()
+
+
+    
+    
+    
+# slice trim to zoomed figure logic
+def slice_trim(**kwargs):
+    
+    zoom_slider = kwargs.get('zsld', None)
+    analysis_plot = kwargs.get('anplt', None)
+    time_slices_db = kwargs.get('tsdb', None)
+    time_slices_db_radio = kwargs.get('tsdbr', None)
+    current_plot_data = kwargs.get('cpt', None)
+    poly_order = kwargs.get('pord', None)
+    slicemap = kwargs.get('slcmap', None)
+    tz_slider = kwargs.get('tzsld', None)
+
+    delta_time = np.timedelta64(np.datetime64(analysis_plot.x_data_slice_max, 'us') - np.datetime64(analysis_plot.x_data_slice_min, 'us'))
+    min_delta = np.array((zoom_slider.get_slider_values()[0]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
+    max_delta = np.array((zoom_slider.get_slider_values()[1]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
+    current_slice = time_slices_db.get(time_slices_db_radio.value)
+    current_slice[2] = current_slice[1] + max_delta
+    current_slice[1] = current_slice[1] + min_delta
+    time_slices_db[time_slices_db_radio.value] = current_slice
+    zoom_slider.resetSlider()
+    analysis_plot.update_plot(current_plot_data, slicemap.map.selected, 
+                              current_slice[1],
+                              current_slice[2],
+                              poly_order, 
+                              tz_slider)
+
+
+
 def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, tz_slider, zoom_slider):
     
     delta_time = np.timedelta64(np.datetime64(plot_object.x_data_slice_max, 'us') - np.datetime64(plot_object.x_data_slice_min, 'us'))
-    new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.zoom_slider.value[0]/100*delta_time).astype(datetime)
-    new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.zoom_slider.value[1]/100*delta_time).astype(datetime)
+    new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[0]/100*delta_time).astype(datetime)
+    new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[1]/100*delta_time).astype(datetime)
     
     plot_object.update_plot(current_plot_data, slicemap_map_selected, 
                               np.datetime64(new_xs_min, 'us'),
@@ -190,10 +418,14 @@ class SimpleZoomSlider():
 
         self.delta_time_int = np.timedelta64(self.maxval-self.minval)
         self.my_slider_layout = Layout(max_width='100%', width='80%', height='75px')
-        self.zoom_slider= widgets.IntRangeSlider(
-            value=[0, 100],
+        
+        
+        self.LH_slider = widgets.IntSlider(
+            value=0,
+            min=0,
+            max=100,
             step=1,
-            description='Zoom:',
+            description='Left:',
             disabled=False,
             continuous_update=False,
             orientation='horizontal',
@@ -201,7 +433,24 @@ class SimpleZoomSlider():
             readout_format='d',
             layout=self.my_slider_layout
         )
-     
+
+        self.RH_slider = widgets.IntSlider(
+            value=100,
+            min=0,
+            max=100,
+            step=1,
+            description='Right:',
+            disabled=False,
+            continuous_update=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d',
+            layout=self.my_slider_layout
+        )
+        
+    def get_slider_values(self):
+        return [self.LH_slider.value, self.RH_slider.value]
+
     
     def updateScale(self, plot):
         self.minval = np.datetime64(plot.xs.min, 'us') #type datetime.datetime - from bqplot
@@ -210,6 +459,10 @@ class SimpleZoomSlider():
         plot.x_data_slice_max = self.maxval
 
         self.delta_time_int = np.timedelta64(self.maxval-self.minval)
+        
+    def resetSlider(self):
+        self.LH_slider.value = 0
+        self.RH_slider.value = 100
 
 
 ########
@@ -282,8 +535,8 @@ class AnalysisPlot(LinePlotBrush):
         poly_degrees: int
         '''
         if parameter_list: #this means the list is not empty
-            self.xs.min = slice_start + np.timedelta64(tz_slider, 'h') #I can pass a np.datetime64, bqplot converts internally to datetime.datetime
-            self.xs.max = slice_end + np.timedelta64(tz_slider, 'h')
+            self.xs.min = slice_start + np.timedelta64(tz_slider.value, 'h') #I can pass a np.datetime64, bqplot converts internally to datetime.datetime
+            self.xs.max = slice_end + np.timedelta64(tz_slider.value, 'h')
             slice_start_index = current_plot_data.index.searchsorted(slice_start)
             initial_value = current_plot_data.index[slice_start_index].timestamp()
             xdata = current_plot_data.iloc[(current_plot_data.index >= slice_start) & 
