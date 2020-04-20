@@ -242,7 +242,7 @@ def lib_on_click_time_slices_db_radio(change, **kwargs):
         analysis_plot.x_data_slice_min = time_slices_db[change['new']][1]
         analysis_plot.x_data_slice_max = time_slices_db[change['new']][2]
         analysis_plot.update_plot(current_plot_data, slicemap.map.selected, time_slices_db[change['new']][1],
-                                  time_slices_db[change['new']][2], poly_order, tz_slider.value)
+                                  time_slices_db[change['new']][2], poly_order, tz_slider)
 
 
     
@@ -255,23 +255,32 @@ def slice_trim(**kwargs):
     analysis_plot = kwargs.get('anplt', None)
     time_slices_db = kwargs.get('tsdb', None)
     time_slices_db_radio = kwargs.get('tsdbr', None)
+    current_plot_data = kwargs.get('cpt', None)
+    poly_order = kwargs.get('pord', None)
+    slicemap = kwargs.get('slcmap', None)
+    tz_slider = kwargs.get('tzsld', None)
 
     delta_time = np.timedelta64(np.datetime64(analysis_plot.x_data_slice_max, 'us') - np.datetime64(analysis_plot.x_data_slice_min, 'us'))
-    min_delta = np.array((zoom_slider.zoom_slider.value[0]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
-    max_delta = np.array((zoom_slider.zoom_slider.value[1]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
+    min_delta = np.array((zoom_slider.get_slider_values()[0]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
+    max_delta = np.array((zoom_slider.get_slider_values()[1]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
     current_slice = time_slices_db.get(time_slices_db_radio.value)
     current_slice[2] = current_slice[1] + max_delta
     current_slice[1] = current_slice[1] + min_delta
     time_slices_db[time_slices_db_radio.value] = current_slice
-    #zoom_slider.zoom_slider.resetSlider()
+    zoom_slider.resetSlider()
+    analysis_plot.update_plot(current_plot_data, slicemap.map.selected, 
+                              current_slice[1],
+                              current_slice[2],
+                              poly_order, 
+                              tz_slider)
 
 
 
 def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, tz_slider, zoom_slider):
     
     delta_time = np.timedelta64(np.datetime64(plot_object.x_data_slice_max, 'us') - np.datetime64(plot_object.x_data_slice_min, 'us'))
-    new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.zoom_slider.value[0]/100*delta_time).astype(datetime)
-    new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.zoom_slider.value[1]/100*delta_time).astype(datetime)
+    new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[0]/100*delta_time).astype(datetime)
+    new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[1]/100*delta_time).astype(datetime)
     
     plot_object.update_plot(current_plot_data, slicemap_map_selected, 
                               np.datetime64(new_xs_min, 'us'),
@@ -408,10 +417,14 @@ class SimpleZoomSlider():
 
         self.delta_time_int = np.timedelta64(self.maxval-self.minval)
         self.my_slider_layout = Layout(max_width='100%', width='80%', height='75px')
-        self.zoom_slider= widgets.IntRangeSlider(
-            value=[0, 100],
+        
+        
+        self.LH_slider = widgets.IntSlider(
+            value=0,
+            min=0,
+            max=100,
             step=1,
-            description='Zoom:',
+            description='Left:',
             disabled=False,
             continuous_update=False,
             orientation='horizontal',
@@ -419,7 +432,24 @@ class SimpleZoomSlider():
             readout_format='d',
             layout=self.my_slider_layout
         )
-     
+
+        self.RH_slider = widgets.IntSlider(
+            value=100,
+            min=0,
+            max=100,
+            step=1,
+            description='Right:',
+            disabled=False,
+            continuous_update=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d',
+            layout=self.my_slider_layout
+        )
+        
+    def get_slider_values(self):
+        return [self.LH_slider.value, self.RH_slider.value]
+
     
     def updateScale(self, plot):
         self.minval = np.datetime64(plot.xs.min, 'us') #type datetime.datetime - from bqplot
@@ -430,8 +460,8 @@ class SimpleZoomSlider():
         self.delta_time_int = np.timedelta64(self.maxval-self.minval)
         
     def resetSlider(self):
-        self.zoom_slider.value[0] = 0
-        self.zoom_slider.value[1] = 100
+        self.LH_slider.value = 0
+        self.RH_slider.value = 100
 
 
 ########
@@ -504,8 +534,8 @@ class AnalysisPlot(LinePlotBrush):
         poly_degrees: int
         '''
         if parameter_list: #this means the list is not empty
-            self.xs.min = slice_start + np.timedelta64(tz_slider, 'h') #I can pass a np.datetime64, bqplot converts internally to datetime.datetime
-            self.xs.max = slice_end + np.timedelta64(tz_slider, 'h')
+            self.xs.min = slice_start + np.timedelta64(tz_slider.value, 'h') #I can pass a np.datetime64, bqplot converts internally to datetime.datetime
+            self.xs.max = slice_end + np.timedelta64(tz_slider.value, 'h')
             slice_start_index = current_plot_data.index.searchsorted(slice_start)
             initial_value = current_plot_data.index[slice_start_index].timestamp()
             xdata = current_plot_data.iloc[(current_plot_data.index >= slice_start) & 
