@@ -64,19 +64,17 @@ def lib_detail_plot_update_brush(*args, **kwargs):
     detail_plot_stats = kwargs.get('dtstats', None)
     
     ##### below, INSTEAD OF tz_slider, IT WOULD BE NICE IF THE TIMEZONE DETECTION WAS AUTOMATIC
-    if slice_plot.brushintsel.selected is not None:
-        if slice_plot.brushintsel.selected.size != 0:
+    if slice_plot.brushintsel.selected.size != 0:
             
-            slice_start_time = slice_plot.brushintsel.selected[0]
-            slice_end_time = slice_plot.brushintsel.selected[-1]
+        slice_start_time = slice_plot.brushintsel.selected[0]
+        slice_end_time = slice_plot.brushintsel.selected[-1]
 
-            sliced_data, selected_slice = data_slicer(current_plot_data, slice_start_time, slice_end_time)
+        sliced_data, selected_slice = data_slicer(current_plot_data, slice_start_time, slice_end_time)
 
+        # check if the brush selector has at least 2 points...
+        if sliced_data.shape[0] > 1:
             detail_plot.line.x = sliced_data.index.values
-            
-            # getting empty data even after all the checks above... had to add this one more
-            if not sliced_data.empty:
-                detail_plot.line.y = np.transpose(sliced_data)
+            detail_plot.line.y = np.transpose(sliced_data)
 
             detail_plot_stats.value = sliced_data.describe().to_html()
             slicebox.update_values(slice_start_time, slice_end_time)
@@ -269,6 +267,8 @@ def slice_trim(**kwargs):
     current_slice[1] = current_slice[1] + min_delta
     time_slices_db[time_slices_db_radio.value] = current_slice
     zoom_slider.resetSlider()
+    analysis_plot.x_data_slice_min = current_slice[1]
+    analysis_plot.x_data_slice_max = current_slice[2]
     analysis_plot.update_plot(current_plot_data, slicemap.map.selected, 
                               current_slice[1],
                               current_slice[2],
@@ -283,11 +283,18 @@ def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, 
     new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[0]/100*delta_time).astype(datetime)
     new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[1]/100*delta_time).astype(datetime)
     
-    plot_object.update_plot(current_plot_data, slicemap_map_selected, 
+    if new_xs_min < new_xs_max :
+        plot_object.update_plot(current_plot_data, slicemap_map_selected, 
                               np.datetime64(new_xs_min, 'us'),
                               np.datetime64(new_xs_max, 'us'),
                               poly_order, 
                               tz_slider)
+    
+    #plot_object.update_plot(current_plot_data, slicemap_map_selected, 
+    #                          np.datetime64(new_xs_min, 'us'),
+    #                          np.datetime64(new_xs_max, 'us'),
+    #                          poly_order, 
+    #                          tz_slider)
 
 # parameter map class
 class ParameterMap:
@@ -375,15 +382,17 @@ class sliceSelectDialog():
             layout=Layout(width='140px')
         )
         
+        self.start_label = widgets.Label('Time slice starting at:    ')
+        self.end_label = widgets.Label('..........and finishing at:    ')
         self.boxes_item_layout = Layout(height='', min_width='40px')
-        self.slice_box_items = [self.start_hour_box, self.start_minute_box, self.start_second_box,
-                                self.end_hour_box, self.end_minute_box, self.end_second_box]
+        self.slice_start = [self.start_label, self.start_hour_box, self.start_minute_box, self.start_second_box]
+        self.slice_end = [self.end_label, self.end_hour_box, self.end_minute_box, self.end_second_box]
         self.boxes_layout = Layout(overflow_x='scroll',
                     border='1px solid black',
                     height='',
                     flex_direction='row',
                     display='flex')
-        self.slice_box = HBox(self.slice_box_items)
+        self.slice_box = VBox([HBox(self.slice_start), HBox(self.slice_end)])
         
     def update_values(self, start, end):
         #start and stop are numpy datetime64 objects
@@ -546,26 +555,27 @@ class AnalysisPlot(LinePlotBrush):
             # ydata is going to be the first selected parameter, for now, thus the "0" below.
             ydata = current_plot_data.iloc[(current_plot_data.index >= slice_start) & 
                                            (current_plot_data.index <= slice_end), 0].values
-            linefit = np.polyfit(xdata, ydata, poly_degree)
-            fittedx = np.linspace(xdata[0], xdata[-1], len(xdata))
+            if (len(xdata) > poly_degree): #only calculate fit if enough points
+                linefit = np.polyfit(xdata, ydata, poly_degree)
+                fittedx = np.linspace(xdata[0], xdata[-1], len(xdata))
 
-            fittedy = np.polyval(linefit, fittedx)
+                fittedy = np.polyval(linefit, fittedx)
 
-            self.fitted_line.x = pd.to_datetime((fittedx*1e9)+(initial_value*1e9))  ##
-            self.fitted_line.y = fittedy
-            self.ys.min=ydata.min(axis=0)
-            self.ys.max=ydata.max(axis=0)
-            stats_string = 'Highest to lowest expoents </p>'
+                self.fitted_line.x = pd.to_datetime((fittedx*1e9)+(initial_value*1e9))  ##
+                self.fitted_line.y = fittedy
+                self.ys.min=ydata.min(axis=0)
+                self.ys.max=ydata.max(axis=0)
+                stats_string = 'Highest to lowest expoents: '
 
-            for x in linefit:
-                stats_string = stats_string + '<p>{:.6f}'.format(x) + '</p>'
-                #stats_string = stats_string + str(x) + '</p>'
-            stats_string = stats_string + 'Min X= {:.2f}'.format(xdata[0]) + '</p>'
-            stats_string = stats_string + 'Max X= {:.2f}'.format(xdata[-1]) + '</p>'
-            stats_string = stats_string + 'Avg Y= {:.2f}'.format(ydata.mean()) + '</p>'
-            stats_string = stats_string + 'Std Y= {:.2f}'.format(ydata.std()) + '</p>'
-            self.fit_statistics.value = stats_string
-##########
+                for x in linefit:
+                    stats_string = stats_string + '; {:.6f}'.format(x) + '; '
+                    #stats_string = stats_string + str(x) + '</p>'
+                stats_string = stats_string + '</P> Stats: Min X= {:.2f}'.format(xdata[0]) + ';  '
+                stats_string = stats_string + 'Max X= {:.2f}'.format(xdata[-1]) + ';  '
+                stats_string = stats_string + 'Avg Y= {:.2f}'.format(ydata.mean()) + ';  '
+                stats_string = stats_string + 'Std Y= {:.2f}'.format(ydata.std())
+                self.fit_statistics.value = stats_string
+    ##########
 
 
 
