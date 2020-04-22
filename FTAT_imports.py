@@ -301,28 +301,36 @@ def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, 
 
 # parameter map class
 class ParameterMap:
-    def __init__(self, sub_sampled_data, color, title):
+    def __init__(self, sub_sampled_data, title, map_groups):
         # parameter map and its tool tip
         self.sub_sampled_data = sub_sampled_data
         self.map_names = list(self.sub_sampled_data.columns)
         self.map_codes = [i for i in range(len(self.map_names))]
+        #tratar - criar lista de dicionario
+        self.map_groups = []
+        for key in map_groups.keys():
+            self.map_groups.append(map_groups.get(key))
         
-        self.map = MarketMap(names=self.map_names,      
+        self.map = MarketMap(names=self.map_names, groups=self.map_groups,     
                                layout=Layout(min_width='50px', min_height='70px'),
                                  enable_hover=False, cols=3,
                             map_margin={'top':50, 'bottom':0, 'left':0, 'right':25})
 
-        self.map.colors = [color]
+        self.map.colors = ['MediumSeaGreen', 'Blue']
         self.map.font_style = {'font-size': '10px', 'fill':'white'}
         self.map.title = title
         self.map.title_style = {'fill': 'Red'}
         
-    def update_map(self, sub_sampled_data):
+    def update_map(self, sub_sampled_data, map_groups):
         self.sub_sampled_data = sub_sampled_data
         self.map_names = list(self.sub_sampled_data.columns)
         self.map_codes = [i for i in range(len(self.map_names))]
+        self.map_groups = []
+        for key in map_groups.keys():
+            self.map_groups.append(map_groups.get(key))
         
         self.map.names = self.map_names
+        self.map.groups = self.map_groups
 
 
 class sliceSelectDialog():
