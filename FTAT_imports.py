@@ -1,10 +1,9 @@
-#FTT imports file
-#contains additional code not notebook
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
 import numpy as np
+import scipy.signal as signal
 import sys
 from datetime import datetime
 import time
@@ -246,7 +245,9 @@ def lib_on_click_time_slices_db_radio(change, **kwargs):
         zoom_slider.resetSlider()
 
 
-    
+        
+
+  
     
     
 # slice trim to zoomed figure logic
@@ -315,6 +316,14 @@ class ParameterMap:
         self.map.font_style = {'font-size': '10px', 'fill':'white'}
         self.map.title = title
         self.map.title_style = {'fill': 'Red'}
+        
+    def update_map(self, sub_sampled_data):
+        self.sub_sampled_data = sub_sampled_data
+        self.map_names = list(self.sub_sampled_data.columns)
+        self.map_codes = [i for i in range(len(self.map_names))]
+        
+        self.map.names = self.map_names
+
 
 class sliceSelectDialog():
     def __init__(self, current_plot_data):
@@ -593,7 +602,7 @@ class StripChart(object):
             self.slice_start = ts_db.get(ts_db_radio.value)[1]
             self.slice_end = ts_db.get(ts_db_radio.value)[2]
         else:
-            self.msge = 'Test Point not set yet.'
+            self.msg = 'Test Point not set yet.'
             self.slice_start = dataframe.index.min()
             self.slice_end = dataframe.index.max()
         #self.path = os.getcwd()
