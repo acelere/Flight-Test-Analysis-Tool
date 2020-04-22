@@ -1,3 +1,5 @@
+#FTT imports file
+#contains additional code not notebook
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
