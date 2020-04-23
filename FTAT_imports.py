@@ -76,11 +76,9 @@ def lib_detail_plot_update_brush(*args, **kwargs):
         if sliced_data.shape[0] > 1:
             scale_min = float(np.transpose(sliced_data).values.min())
             scale_max = float(np.transpose(sliced_data).values.max())
-            if abs(scale_min - scale_max) < 10:
-                if (scale_min < 0.001) and (scale_min > -0.001):
-                    scale_max = scale_min + 1
+            if abs(scale_min - scale_max) < 0.0001:
+                scale_max = scale_min + 1
 
-            print(scale_min, scale_max)
             detail_plot.ys.min = scale_min
             detail_plot.ys.max = scale_max
             detail_plot.line.x = sliced_data.index.values
