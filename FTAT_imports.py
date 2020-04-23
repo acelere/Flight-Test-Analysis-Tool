@@ -74,8 +74,17 @@ def lib_detail_plot_update_brush(*args, **kwargs):
 
         # check if the brush selector has at least 2 points...
         if sliced_data.shape[0] > 1:
+            scale_min = float(np.transpose(sliced_data).values.min())
+            scale_max = float(np.transpose(sliced_data).values.max())
+            if abs(scale_min - scale_max) < 10:
+                if (scale_min < 0.001) and (scale_min > -0.001):
+                    scale_max = scale_min + 1
+
+            print(scale_min, scale_max)
+            detail_plot.ys.min = scale_min
+            detail_plot.ys.max = scale_max
             detail_plot.line.x = sliced_data.index.values
-            detail_plot.line.y = np.transpose(sliced_data)
+            detail_plot.line.y = np.transpose(sliced_data).values
 
             detail_plot_stats.value = sliced_data.describe().to_html()
             slicebox.update_values(slice_start_time, slice_end_time)
@@ -517,6 +526,7 @@ class LinePlot:
 
         self.fig = Figure(marks=[self.line], axes=[self.xax, self.yax], layout=Layout(width = '80%'))
 ########
+
 
 
 ########
