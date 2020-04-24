@@ -79,7 +79,6 @@ def safe_set_scales(**kwargs):
 
 
 def lib_detail_plot_update_brush(*args, **kwargs):
-    #this call back needs to:
     # get the selected TS from the brush
     # update the detail plot with the "zoomed-in" data
     
@@ -90,7 +89,6 @@ def lib_detail_plot_update_brush(*args, **kwargs):
     slicebox = kwargs.get('slcbx', None)
     detail_plot_stats = kwargs.get('dtstats', None)
     
-    ##### below, INSTEAD OF tz_slider, IT WOULD BE NICE IF THE TIMEZONE DETECTION WAS AUTOMATIC
     if slice_plot.brushintsel.selected.size != 0:
             
         slice_start_time = slice_plot.brushintsel.selected[0]
@@ -101,23 +99,13 @@ def lib_detail_plot_update_brush(*args, **kwargs):
         # check if the brush selector has at least 2 points...
         if sliced_data.shape[0] > 1:
             safe_set_scales(plt=detail_plot, pltdt=np.transpose(sliced_data).values)
-            #scale_min = float(np.transpose(sliced_data).values.min())
-            #scale_max = float(np.transpose(sliced_data).values.max())
-            #if abs(scale_min - scale_max) < 0.0001:
-            #    scale_max = scale_min + 1
-
-            #detail_plot.ys.min = scale_min
-            #detail_plot.ys.max = scale_max
             detail_plot.line.x = sliced_data.index.values
             detail_plot.line.y = np.transpose(sliced_data).values
-
             detail_plot_stats.value = sliced_data.describe().to_html()
             slicebox.update_values(slice_start_time, slice_end_time)
 
 
-
 def lib_on_plot_button_clicked(b, **kwargs):
-
     
     current_plot_data = kwargs.get('cpt', None)
     detail_plot = kwargs.get('detplt', None)
@@ -162,7 +150,6 @@ def lib_on_saveTS_button_clicked(b, **kwargs):
     TP_saved_dd = kwargs.get('tpsavdd', None)
     time_slices_db_radio = kwargs.get('tsdbrb', None)
     
-
     
     if str(TP_number_box.value) in time_slices_db:
         TS_message.value = 'TP# {} already in db, choose a different one'.format(TP_number_box.value)
@@ -175,7 +162,6 @@ def lib_on_saveTS_button_clicked(b, **kwargs):
         TS_message.value = 'added TP {}'.format(TP_number_box.value)
     
     
-
     
     
 def lib_on_delTS_button_clicked(b, **kwargs):
@@ -193,7 +179,7 @@ def lib_on_delTS_button_clicked(b, **kwargs):
     else:
         TS_message.value = 'trying to delete nothing?'    
     
-    
+
 
     
 def lib_save_slices(**kwargs):
@@ -257,7 +243,6 @@ def lib_save_slices(**kwargs):
     
     
     
-    
 def lib_on_click_time_slices_db_radio(change, **kwargs):
     
     current_plot_data = kwargs.get('cpt', None)
@@ -281,9 +266,6 @@ def lib_on_click_time_slices_db_radio(change, **kwargs):
 
         
 
-  
-    
-    
 # slice trim to zoomed figure logic
 def slice_trim(**kwargs):
     
@@ -618,7 +600,6 @@ class AnalysisPlot(LinePlotBrush):
 
                 for x in linefit:
                     stats_string = stats_string + '; {:.6f}'.format(x) + '; '
-                    #stats_string = stats_string + str(x) + '</p>'
                 stats_string = stats_string + '</P> Stats: Min X= {:.2f}'.format(xdata[0]) + ';  '
                 stats_string = stats_string + 'Max X= {:.2f}'.format(xdata[-1]) + ';  '
                 stats_string = stats_string + 'Avg Y= {:.2f}'.format(ydata.mean()) + ';  '
@@ -763,6 +744,12 @@ class FileBrowser(object):
             buttons.append(button)
         box.children = tuple([widgets.HTML("<h2>%s</h2>" % (self.path,))] + buttons)
 
+
+        
+#####################################################################################################################################
+# PARAMETER GROUPS MAPS
+#
+# Add for each aircraft
 
 def get_param_group(filepath, raw_data, in_map_groups):
     out_map_groups = in_map_groups
