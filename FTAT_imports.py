@@ -52,6 +52,21 @@ def data_slicer(data_stream, slice_start_time, slice_end_time):
     return sliced_data, selected_slice
 
 
+def safe_set_scales(**kwargs):
+    
+    plot_data = kwargs.get('pltdt', None)
+    plot_obj = kwargs.get('plt', None)
+    
+    scale_min = float(plot_data.min())
+    scale_max = float(plot_data.max())
+    if abs(scale_min - scale_max) < 0.0001:
+        scale_max = scale_min + 1
+
+    plot_obj.ys.min = scale_min
+    plot_obj.ys.max = scale_max
+
+
+
 def lib_detail_plot_update_brush(*args, **kwargs):
     #this call back needs to:
     # get the selected TS from the brush
@@ -74,13 +89,14 @@ def lib_detail_plot_update_brush(*args, **kwargs):
 
         # check if the brush selector has at least 2 points...
         if sliced_data.shape[0] > 1:
-            scale_min = float(np.transpose(sliced_data).values.min())
-            scale_max = float(np.transpose(sliced_data).values.max())
-            if abs(scale_min - scale_max) < 0.0001:
-                scale_max = scale_min + 1
+            safe_set_scales(plt=detail_plot, pltdt=np.transpose(sliced_data).values)
+            #scale_min = float(np.transpose(sliced_data).values.min())
+            #scale_max = float(np.transpose(sliced_data).values.max())
+            #if abs(scale_min - scale_max) < 0.0001:
+            #    scale_max = scale_min + 1
 
-            detail_plot.ys.min = scale_min
-            detail_plot.ys.max = scale_max
+            #detail_plot.ys.min = scale_min
+            #detail_plot.ys.max = scale_max
             detail_plot.line.x = sliced_data.index.values
             detail_plot.line.y = np.transpose(sliced_data).values
 
@@ -299,12 +315,7 @@ def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, 
                               np.datetime64(new_xs_max, 'us'),
                               poly_order, 
                               tz_slider)
-    
-    #plot_object.update_plot(current_plot_data, slicemap_map_selected, 
-    #                          np.datetime64(new_xs_min, 'us'),
-    #                          np.datetime64(new_xs_max, 'us'),
-    #                          poly_order, 
-    #                          tz_slider)
+
 
 # parameter map class
 class ParameterMap:
@@ -323,7 +334,7 @@ class ParameterMap:
                                  enable_hover=False, cols=3,
                             map_margin={'top':50, 'bottom':0, 'left':0, 'right':25})
 
-        self.map.colors = ['#0a141b', '#152837', '#203c53', '#2b506f', '#36648b', '#4f4f4f', '#545454', '#595959', '#5e5e5e']
+        #self.map.colors = ['#0a141b', '#152837', '#203c53', '#2b506f', '#36648b', '#4f4f4f', '#545454', '#595959', '#5e5e5e']
         self.map.font_style = {'font-size': '10px', 'fill':'white'}
         self.map.title = title
         self.map.title_style = {'fill': 'Red'}
