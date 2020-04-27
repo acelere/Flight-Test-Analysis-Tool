@@ -49,7 +49,10 @@ def data_slicer(data_stream, slice_start_time, slice_end_time):
     slice_start_index = data_stream.index.searchsorted(slice_start_time)
     slice_end_index = data_stream.index.searchsorted(slice_end_time)
     sliced_data = data_stream.iloc[slice_start_index:slice_end_index]
-    selected_slice = [sliced_data.index.values[0], sliced_data.index.values[-1]]
+    if sliced_data.size > 0:
+        selected_slice = [sliced_data.index.values[0], sliced_data.index.values[-1]]
+    else:
+        selected_slice = [slice_start_time, slice_end_time]
     return sliced_data, selected_slice
 
 
