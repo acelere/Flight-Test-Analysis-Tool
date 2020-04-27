@@ -1187,5 +1187,44 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         for key in in_map_groups.keys():
             if PDAS_dict.get(key):
                 out_map_groups[key] = PDAS_dict[key]
+    
+
+    elif 'ilevil' in filetype:
+        ILEVIL_dict = {}       
+        #ILEVIL_dict['TIMER(ms)'] = 'INS'
+        ILEVIL_dict['LATITUDE'] = 'INS'
+        ILEVIL_dict['LONGITUDE'] = 'INS'
+        ILEVIL_dict['GNDSPD'] = 'INS'
+        ILEVIL_dict['COURSE'] = 'INS'
+        ILEVIL_dict['MAG_DECLINATION'] = 'INS'
+        ILEVIL_dict['GPS_CLIMBRATE'] = 'INS'
+        ILEVIL_dict['ALTGPS'] = 'INS'
+        ILEVIL_dict['PALT'] = 'anemo'
+        ILEVIL_dict['AIRSPEED'] = 'anemo'
+        ILEVIL_dict['PRESSURE_CLIMBRATE'] = 'anemo'
+        ILEVIL_dict['ROLL'] = 'INS'
+        ILEVIL_dict['PITCH'] = 'INS'
+        ILEVIL_dict['YAW'] = 'INS'
+        ILEVIL_dict['HEADING'] = 'INS'
+        ILEVIL_dict['SLIP'] = 'INS'
+        ILEVIL_dict['WAAS'] = 'INS'
+        ILEVIL_dict['GPS_FIX'] = 'INS'
+        ILEVIL_dict['SATELLITES'] = 'INS'
+        ILEVIL_dict['AHRS_STATUS'] = 'INS'
+        #ILEVIL_dict['EVENT'] = 'INS'
+        ILEVIL_dict['ACC_X'] = 'INS'
+        ILEVIL_dict['ACC_Y'] = 'INS'
+        ILEVIL_dict['ACC_Z'] = 'INS'
+        ILEVIL_dict['RATE_P'] = 'INS'
+        ILEVIL_dict['RATE_Q'] = 'INS'
+        ILEVIL_dict['RATE_R'] = 'INS'
+        ILEVIL_dict['Vx'] = 'INS'
+        ILEVIL_dict['Vy'] = 'INS'
+        ILEVIL_dict['Vz'] = 'INS'
+        #ILEVIL_dict['TEMPERATURE'] = 'INS'
+        
+        for key in in_map_groups.keys():
+            if ILEVIL_dict.get(key):
+                out_map_groups[key] = ILEVIL_dict[key]
         
     return out_map_groups
