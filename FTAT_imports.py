@@ -5,6 +5,7 @@ register_matplotlib_converters()
 import numpy as np
 import scipy.signal as signal
 import sys
+#from datetime import datetime
 import datetime
 import time
 
@@ -309,7 +310,6 @@ def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, 
                               poly_order, 
                               tz_slider)
 
-        
 def get_time(t):
     #simple PDAS converter
     #keep it for now
@@ -328,6 +328,7 @@ def weeksecondstoutc(gpsweek,gpsseconds, delta_millis, leapseconds):
     epoch = datetime.datetime.strptime("1980-01-06 00:00:00",datetimeformat)
     elapsed = datetime.timedelta(days=(gpsweek*7),seconds=(int(gpsseconds)+leapseconds), milliseconds=delta_millis*1000)
     return datetime.datetime.strftime(epoch + elapsed,datetimeformat_out)
+
 
 # parameter map class
 class ParameterMap:
@@ -770,7 +771,7 @@ class FileBrowser(object):
 #
 # Add for each aircraft
 
-def get_param_group(filepath, raw_data, in_map_groups):
+def get_param_group(filepath, filetype, raw_data, in_map_groups):
     out_map_groups = in_map_groups
     if 'FPQA' in filepath:
         FPQA_dict = {}       
@@ -961,5 +962,227 @@ def get_param_group(filepath, raw_data, in_map_groups):
         for key in in_map_groups.keys():
             if FPQA_dict.get(key):
                 out_map_groups[key] = FPQA_dict[key]
-    
+                
+    elif 'FXZI' in filepath:
+        FXZI_dict = {}
+        FXZI_dict['AIRSPEED_PASCAL'] = 'anemo'
+        FXZI_dict['AIRSPEED_Pd'] = 'anemo'
+        FXZI_dict['AIRSPEED'] = 'anemo'
+        FXZI_dict['ALTITUDE_FEET'] = 'anemo'
+        FXZI_dict['ALTITUDE_PASCAL'] = 'anemo'
+        FXZI_dict['DIVE_EU'] = 'commands'
+        FXZI_dict['EGT_EU_1'] = 'engine'
+        FXZI_dict['ELEV_TRIM_POS_EU'] = 'INS'
+        FXZI_dict['Eng1_FuelF_EU'] = 'engine'
+        FXZI_dict['Eng1_FuelU_EU'] = 'engine'
+        FXZI_dict['Eng2_FuelF_EU'] = 'engine'
+        FXZI_dict['Eng2_FuelU_EU'] = 'engine'
+        FXZI_dict['EOP_EU'] = 'engine'
+        FXZI_dict['EOT_EU'] = 'engine'
+        FXZI_dict['ERPM_EU'] = 'engine'
+        FXZI_dict['EVENT_1_EU'] = 'FTI'
+        FXZI_dict['EVENT_2_EU'] = 'INS'
+        FXZI_dict['FLAP_POS_EU'] = 'commands'
+        FXZI_dict['Fuel_left_kg'] = 'engine'
+        FXZI_dict['G_Alt'] = 'INS'
+        FXZI_dict['G_GS'] = 'INS'
+        FXZI_dict['G_Track'] = 'INS'
+        FXZI_dict['Garmin_LatDD'] = 'INS'
+        FXZI_dict['Garmin_LongDD'] = 'INS'
+        FXZI_dict['LAT_CTL_POS_EU'] = 'commands'
+        FXZI_dict['LAT_FORCE_EU'] = 'commands'
+        FXZI_dict['LG_STS_EU'] = 'INS'
+        FXZI_dict['LONG_CTL_POS_EU'] = 'commands'
+        FXZI_dict['LONG_FORCE_EU'] = 'commands'
+        FXZI_dict['NxC_EU'] = 'INS'
+        FXZI_dict['NyC_EU'] = 'INS'
+        FXZI_dict['NzC_EU'] = 'INS'
+        FXZI_dict['RUD_PDL_POS_EU'] = 'commands'
+        FXZI_dict['THROT_POS_EU'] = 'commands'
+        FXZI_dict['TotFuel_Rmng_EU'] = 'engine'
+        FXZI_dict['TotFuelFlow_EU'] = 'engine'
+        FXZI_dict['VN_Alt'] = 'INS'
+        FXZI_dict['VN_DnVel'] = 'INS'
+        FXZI_dict['VN_Evel'] = 'INS'
+        FXZI_dict['VN_Lat'] = 'INS'
+        FXZI_dict['VN_Long'] = 'INS'
+        FXZI_dict['VN_NVel'] = 'INS'
+        FXZI_dict['VN_Nx'] = 'INS'
+        FXZI_dict['VN_Ny'] = 'INS'
+        FXZI_dict['VN_Nz'] = 'INS'
+        FXZI_dict['VN_PitchAng'] = 'INS'
+        FXZI_dict['VN_PitchRate'] = 'INS'
+        FXZI_dict['VN_Press'] = 'INS'
+        FXZI_dict['VN_RollAng'] = 'INS'
+        FXZI_dict['VN_RollRate'] = 'INS'
+        FXZI_dict['VN_Temp'] = 'INS'
+        FXZI_dict['VN_YawAng'] = 'INS'
+        FXZI_dict['VN_YawRate'] = 'INS'
+        FXZI_dict['Wref100'] = 'INS'
+        FXZI_dict['Wref102'] = 'INS'
+        FXZI_dict['Wref98'] = 'INS'
+        FXZI_dict['Wref'] = 'INS'
+        
+        for key in in_map_groups.keys():
+            if FXZI_dict.get(key):
+                out_map_groups[key] = FXZI_dict[key]
+        
+    elif 'N7025J' in filepath:
+        N7025J_dict = {}
+        N7025J_dict['Ail_POS_Cmd_Perc'] = 'commands'
+        N7025J_dict['AIL_POS_Command'] = 'commands'
+        N7025J_dict['AIL_POS_Surface_LH'] = 'commands'
+        N7025J_dict['AIL_POS_Surface_RH'] = 'commands'
+        N7025J_dict['Elev_POS_Cmd_Perc'] = 'commands'
+        N7025J_dict['ELEV_POS_Command'] = 'commands'
+        N7025J_dict['ELEV_POS_EU'] = 'commands'
+        N7025J_dict['EVENT_EU'] = 'INS'
+        N7025J_dict['L_RUDPEDF'] = 'commands'
+        N7025J_dict['LATF'] = 'commands'
+        N7025J_dict['LONGF'] = 'commands'
+        N7025J_dict['OAT_EU'] = 'anemo'
+        N7025J_dict['R_RUDPEDF'] = 'commands'
+        N7025J_dict['Rud_Diff_Force'] = 'commands'
+        N7025J_dict['Rud_POS_Cmd_Perc'] = 'commands'
+        N7025J_dict['RUD_POS_Command'] = 'commands'
+        N7025J_dict['RUD_Surface_POS_EU'] = 'commands'
+        N7025J_dict['VN_Alt'] = 'INS'
+        N7025J_dict['VN_DnVel'] = 'INS'
+        N7025J_dict['VN_Evel'] = 'INS'
+        N7025J_dict['VN_Lat'] = 'INS'
+        N7025J_dict['VN_Long'] = 'INS'
+        N7025J_dict['VN_NVel'] = 'INS'
+        N7025J_dict['VN_Nx'] = 'INS'
+        N7025J_dict['VN_Ny'] = 'INS'
+        N7025J_dict['VN_Nz'] = 'INS'
+        N7025J_dict['VN_PitchAng'] = 'INS'
+        N7025J_dict['VN_PitchRate'] = 'INS'
+        N7025J_dict['VN_Press'] = 'INS'
+        N7025J_dict['VN_RollAng'] = 'INS'
+        N7025J_dict['VN_RollRate'] = 'INS'
+        N7025J_dict['VN_Temp'] = 'INS'
+        N7025J_dict['VN_YawAng'] = 'INS'
+        N7025J_dict['VN_YawRate'] = 'INS'
+        
+        for key in in_map_groups.keys():
+            if N7025J_dict.get(key):
+                out_map_groups[key] = N7025J_dict[key]
+                
+    elif 'PDAS' in filetype:
+        PDAS_dict = {}      
+        #PDAS_dict['Time (s)'] = 'INS'
+        #PDAS_dict['Active'] = 'INS'
+        #PDAS_dict['Test Point'] = 'INS'
+        PDAS_dict['IMU Accel X (g)'] = 'INS'
+        PDAS_dict['IMU Accel Y (g)'] = 'INS'
+        PDAS_dict['IMU Accel Z (g)'] = 'INS'
+        PDAS_dict['IMU Gyro X (deg/s)'] = 'INS'
+        PDAS_dict['IMU Gyro Y (deg/s)'] = 'INS'
+        PDAS_dict['IMU Gyro Z (deg/s)'] = 'INS'
+        PDAS_dict['IMU Mag X (uT)'] = 'INS'
+        PDAS_dict['IMU Mag Y (uT)'] = 'INS'
+        PDAS_dict['IMU Mag Z (uT)'] = 'INS'
+        PDAS_dict['GNSS TOW (s)'] = 'INS'
+        PDAS_dict['GNSS Week'] = 'INS'
+        PDAS_dict['GNSS Num Sat'] = 'INS'
+        PDAS_dict['GNSS Fix'] = 'INS'
+        PDAS_dict['GNSS Latitude (deg)'] = 'INS'
+        PDAS_dict['GNSS Longitude (deg)'] = 'INS'
+        PDAS_dict['GNSS Altitude (ft)'] = 'INS'
+        PDAS_dict['GNSS North Velocity (kts)'] = 'INS'
+        PDAS_dict['GNSS East Velocity (kts)'] = 'INS'
+        PDAS_dict['GNSS Down Velocity (kts)'] = 'INS'
+        PDAS_dict['GNSS Horizontal Accuracy (ft)'] = 'INS'
+        PDAS_dict['GNSS Vertical Accuracy (ft)'] = 'INS'
+        PDAS_dict['GNSS Speed Accuracy (kts)'] = 'INS'
+        PDAS_dict['INS Accel X (g)'] = 'INS'
+        PDAS_dict['INS Accel Y (g)'] = 'INS'
+        PDAS_dict['INS Accel Z (g)'] = 'INS'
+        PDAS_dict['INS Gyro X (deg/s)'] = 'INS'
+        PDAS_dict['INS Gyro Y (deg/s)'] = 'INS'
+        PDAS_dict['INS Gyro Z (deg/s)'] = 'INS'
+        PDAS_dict['INS Mag X (uT)'] = 'INS'
+        PDAS_dict['INS Mag Y (uT)'] = 'INS'
+        PDAS_dict['INS Mag Z (uT)'] = 'INS'
+        PDAS_dict['INS Latitude (deg)'] = 'INS'
+        PDAS_dict['INS Longitude (deg)'] = 'INS'
+        PDAS_dict['INS Altitude (ft)'] = 'INS'
+        PDAS_dict['INS North Velocity (kts)'] = 'INS'
+        PDAS_dict['INS East Velocity (kts)'] = 'INS'
+        PDAS_dict['INS Down Velocity (kts)'] = 'INS'
+        PDAS_dict['INS Yaw (deg)'] = 'INS'
+        PDAS_dict['INS Pitch (deg)'] = 'INS'
+        PDAS_dict['INS Roll (deg)'] = 'INS'
+        PDAS_dict['INS Attitude Uncertainty (deg)'] = 'INS'
+        PDAS_dict['INS Position Uncertainty (ft)'] = 'INS'
+        PDAS_dict['INS Velocity Uncertainty (kts)'] = 'INS'
+        PDAS_dict['Pitot-Static Enabled'] = 'anemo'
+        PDAS_dict['OAT Enabled'] = 'anemo'
+        PDAS_dict['Static Pressure (Pa)'] = 'anemo'
+        PDAS_dict['Filtered Static Pressure (Pa)'] = 'anemo'
+        PDAS_dict['Differential Pressure (Pa)'] = 'anemo'
+        PDAS_dict['Filtered Differential Pressure (Pa)'] = 'anemo'
+        PDAS_dict['OAT (C)'] = 'anemo'
+        PDAS_dict['Filtered OAT (C)'] = 'anemo'
+        PDAS_dict['IAS (kts)'] = 'anemo'
+        PDAS_dict['EAS (kts)'] = 'anemo'
+        PDAS_dict['TAS (kts)'] = 'anemo'
+        PDAS_dict['Pressure Altitude (ft)'] = 'anemo'
+        PDAS_dict['Altitude AGL (ft)'] = 'anemo'
+        PDAS_dict['Density Altitude (ft)'] = 'anemo'
+        PDAS_dict['Analog 0 Enabled'] = 'analog'
+        PDAS_dict['Analog 0 Voltage'] = 'analog'
+        PDAS_dict['Analog 0 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 0 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 1 Enabled'] = 'analog'
+        PDAS_dict['Analog 1 Voltage'] = 'analog'
+        PDAS_dict['Analog 1 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 1 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 2 Enabled'] = 'analog'
+        PDAS_dict['Analog 2 Voltage'] = 'analog'
+        PDAS_dict['Analog 2 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 2 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 3 Enabled'] = 'analog'
+        PDAS_dict['Analog 3 Voltage'] = 'analog'
+        PDAS_dict['Analog 3 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 3 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 4 Enabled'] = 'analog'
+        PDAS_dict['Analog 4 Voltage'] = 'analog'
+        PDAS_dict['Analog 4 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 4 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 5 Enabled'] = 'analog'
+        PDAS_dict['Analog 5 Voltage'] = 'analog'
+        PDAS_dict['Analog 5 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 5 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 6 Enabled'] = 'analog'
+        PDAS_dict['Analog 6 Voltage'] = 'analog'
+        PDAS_dict['Analog 6 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 6 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 7 Enabled'] = 'analog'
+        PDAS_dict['Analog 7 Voltage'] = 'analog'
+        PDAS_dict['Analog 7 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 7 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 8 Enabled'] = 'analog'
+        PDAS_dict['Analog 8 Voltage'] = 'analog'
+        PDAS_dict['Analog 8 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 8 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 9 Enabled'] = 'analog'
+        PDAS_dict['Analog 9 Voltage'] = 'analog'
+        PDAS_dict['Analog 9 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 9 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 10 Enabled'] = 'analog'
+        PDAS_dict['Analog 10 Voltage'] = 'analog'
+        PDAS_dict['Analog 10 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 10 Calibrated Value'] = 'analog'
+        PDAS_dict['Analog 11 Enabled'] = 'analog'
+        PDAS_dict['Analog 11 Voltage'] = 'analog'
+        PDAS_dict['Analog 11 Filtered Voltage'] = 'analog'
+        PDAS_dict['Analog 11 Calibrated Value'] = 'analog'
+        #PDAS_dict['delta_seconds'] = 'INS'
+        
+                
+        for key in in_map_groups.keys():
+            if PDAS_dict.get(key):
+                out_map_groups[key] = PDAS_dict[key]
+        
     return out_map_groups
