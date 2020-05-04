@@ -302,9 +302,10 @@ def slice_trim(**kwargs):
 
 def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, tz_slider, zoom_slider):
     
-    delta_time = np.timedelta64(np.datetime64(plot_object.x_data_slice_max, 'us') - np.datetime64(plot_object.x_data_slice_min, 'us'))
-    new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[0]/100*delta_time).astype(datetime)
-    new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[1]/100*delta_time).astype(datetime)
+    delta_time = np.datetime64(plot_object.x_data_slice_max, 'us') - np.datetime64(plot_object.x_data_slice_min, 'us')
+    new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[0]/100*delta_time)
+    new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[1]/100*delta_time)
+
     
     if new_xs_min < new_xs_max :
         plot_object.update_plot(current_plot_data, slicemap_map_selected, 
@@ -579,8 +580,12 @@ class AnalysisPlot(LinePlotBrush):
                           title='No Parameter Selected',
                           layout=Layout(width = '80%'), 
                           interaction=self.brushintsel)
-        self.xs.min=min([mark.x.min() for mark in self.fig.marks]) + np.timedelta64(tz_slider, 'h') #this is datetime.datetime internally to bqplot
-        self.xs.max=max([mark.x.max() for mark in self.fig.marks]) + np.timedelta64(tz_slider, 'h')
+        
+        self.xs.min=min([mark.x.min() for mark in self.fig.marks]) #this is datetime.datetime internally to bqplot
+        self.xs.max=max([mark.x.max() for mark in self.fig.marks])
+        
+        #self.xs.min=min([mark.x.min() for mark in self.fig.marks]) + np.timedelta64(tz_slider, 'h') #this is datetime.datetime internally to bqplot
+        #self.xs.max=max([mark.x.max() for mark in self.fig.marks]) + np.timedelta64(tz_slider, 'h')
         self.fit_statistics = widgets.HTML(
                                         value="Empty <b>Empty</b>",
                                         placeholder='Poly Coefs',
@@ -598,8 +603,11 @@ class AnalysisPlot(LinePlotBrush):
         poly_degrees: int
         '''
         if parameter_list: #this means the list is not empty
-            self.xs.min = slice_start + np.timedelta64(tz_slider.value, 'h') #I can pass a np.datetime64, bqplot converts internally to datetime.datetime
-            self.xs.max = slice_end + np.timedelta64(tz_slider.value, 'h')
+            
+            self.xs.min = slice_start
+            self.xs.max = slice_end
+            
+            
             slice_start_index = current_plot_data.index.searchsorted(slice_start)
             initial_value = current_plot_data.index[slice_start_index].timestamp()
             xdata = current_plot_data.iloc[(current_plot_data.index >= slice_start) & 
