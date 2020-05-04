@@ -254,7 +254,6 @@ def lib_on_click_time_slices_db_radio(change, **kwargs):
     time_slices_db = kwargs.get('tsdb', None)
     poly_order = kwargs.get('pord', None)
     slicemap = kwargs.get('slcmap', None)
-    tz_slider = kwargs.get('tzsld', None)
     zoom_slider = kwargs.get('zsld', None)
     
     #everytime we select a slice, the analysis plot needs to be updated
@@ -264,7 +263,7 @@ def lib_on_click_time_slices_db_radio(change, **kwargs):
         analysis_plot.x_data_slice_min = time_slices_db[change['new']][1]
         analysis_plot.x_data_slice_max = time_slices_db[change['new']][2]
         analysis_plot.update_plot(current_plot_data, slicemap.map.selected, time_slices_db[change['new']][1],
-                                  time_slices_db[change['new']][2], poly_order, tz_slider)
+                                  time_slices_db[change['new']][2], poly_order)
         zoom_slider.resetSlider()
 
 
@@ -280,7 +279,6 @@ def slice_trim(**kwargs):
     current_plot_data = kwargs.get('cpt', None)
     poly_order = kwargs.get('pord', None)
     slicemap = kwargs.get('slcmap', None)
-    tz_slider = kwargs.get('tzsld', None)
 
     delta_time = np.timedelta64(np.datetime64(analysis_plot.x_data_slice_max, 'us') - np.datetime64(analysis_plot.x_data_slice_min, 'us'))
     min_delta = np.array((zoom_slider.get_slider_values()[0]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
@@ -295,12 +293,11 @@ def slice_trim(**kwargs):
     analysis_plot.update_plot(current_plot_data, slicemap.map.selected, 
                               current_slice[1],
                               current_slice[2],
-                              poly_order, 
-                              tz_slider)
+                              poly_order)
 
 
 
-def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, tz_slider, zoom_slider):
+def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, zoom_slider):
     
     delta_time = np.datetime64(plot_object.x_data_slice_max, 'us') - np.datetime64(plot_object.x_data_slice_min, 'us')
     new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[0]/100*delta_time)
@@ -311,8 +308,7 @@ def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, 
         plot_object.update_plot(current_plot_data, slicemap_map_selected, 
                               np.datetime64(new_xs_min, 'us'),
                               np.datetime64(new_xs_max, 'us'),
-                              poly_order, 
-                              tz_slider)
+                              poly_order)
 
 def get_time(t):
     #simple PDAS converter
@@ -567,7 +563,7 @@ class LinePlotBrush(LinePlot):
 
 ########
 class AnalysisPlot(LinePlotBrush):
-    def __init__(self, x_data, y_data, tz_slider):
+    def __init__(self, x_data, y_data):
         super().__init__(x_data, y_data)
         self.x_fitted_data = x_data
         self.y_fitted_data = y_data
@@ -594,7 +590,7 @@ class AnalysisPlot(LinePlotBrush):
         self.fit_statistics.value = 'Empty'
         
         
-    def update_plot(self, current_plot_data, parameter_list, slice_start, slice_end, poly_degree, tz_slider):
+    def update_plot(self, current_plot_data, parameter_list, slice_start, slice_end, poly_degree):
         '''
         current_plot_data
         parameter_list
