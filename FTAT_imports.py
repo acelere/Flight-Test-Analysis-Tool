@@ -330,6 +330,19 @@ def weeksecondstoutc(gpsweek,gpsseconds, delta_millis, leapseconds):
     return datetime.datetime.strftime(epoch + elapsed,datetimeformat_out)
 
 
+def G3Xweeksecondstoutc(df, leapseconds):
+    '''
+    This function credit:
+    https://gist.github.com/jeremiahajohnson
+    '''
+    datetimeformat = "%Y-%m-%d %H:%M:%S"
+    datetimeformat_out = "%Y-%m-%d %H:%M:%S.%f"
+    epoch = datetime.datetime.strptime(df['Local Date'] + " " + "00:00:00", datetimeformat)
+    elapsed = datetime.timedelta(seconds=(df['GPS Time of Week'] + leapseconds))
+    return datetime.datetime.strftime(epoch + elapsed,datetimeformat_out)
+
+
+
 # parameter map class
 class ParameterMap:
     def __init__(self, sub_sampled_data, title, map_groups):
@@ -1230,5 +1243,84 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         for key in in_map_groups.keys():
             if ILEVIL_dict.get(key):
                 out_map_groups[key] = ILEVIL_dict[key]
+                
+
+    elif 'G3X' in filetype:
+        G3X_dict = {}       
+        #ILEVIL_dict['TIMER(ms)'] = 'INS'
+        G3X_dict['Local Date'] = 'time'
+        G3X_dict['Local Time'] = 'time'
+        G3X_dict['UTC Time'] = 'time'
+        G3X_dict['UTC Offset'] = 'time'
+        G3X_dict['Latitude'] = 'INS'
+        G3X_dict['Longitude'] = 'INS'
+        G3X_dict['AltGPS'] = 'INS'
+        G3X_dict['GPS Fix Status'] = 'INS'
+        G3X_dict['GPS Time of Week'] = 'INS'
+        G3X_dict['GndSpd'] = 'INS'
+        G3X_dict['TRK'] = 'INS'
+        G3X_dict['GPS Velocity E'] = 'INS'
+        G3X_dict['GPS Velocity N'] = 'INS'
+        G3X_dict['GPS Velocity U'] = 'INS'
+        G3X_dict['HDG'] = 'INS'
+        G3X_dict['GPS PDOP'] = 'INS'
+        G3X_dict['GPS Sats'] = 'INS'
+        G3X_dict['AltMSL'] = 'anemo'
+        G3X_dict['AltB'] = 'anemo'
+        G3X_dict['VSpd'] = 'anemo'
+        G3X_dict['IAS'] = 'anemo'
+        G3X_dict['TAS'] = 'anemo'
+        G3X_dict['Pitch'] = 'INS'
+        G3X_dict['Roll'] = 'INS'
+        G3X_dict['Lateral Acceleration'] = 'INS'
+        G3X_dict['Normal Acceleration'] = 'INS'
+        G3X_dict['Selected Heading'] = 'NAV'
+        G3X_dict['Selected Altitude'] = 'NAV'
+        G3X_dict['Baro Setting'] = 'anemo'
+        G3X_dict['Active Nav Source'] = 'NAV'
+        G3X_dict['Nav Identifier'] = 'NAV'
+        G3X_dict['Nav Frequency'] = 'NAV'
+        G3X_dict['Nav Distance'] = 'NAV'
+        G3X_dict['Nav Bearing'] = 'NAV'
+        G3X_dict['Nav Course'] = 'NAV'
+        G3X_dict['Cross Track Distance'] = 'NAV'
+        G3X_dict['Horizontal CDI Deflection'] = 'NAV'
+        G3X_dict['Horizontal CDI Full Scale'] = 'NAV'
+        G3X_dict['Horizontal CDI Scale'] = 'NAV'
+        G3X_dict['Vertical CDI Deflection'] = 'NAV'
+        G3X_dict['Vertical CDI Full Scale'] = 'NAV'
+        G3X_dict['VNAV CDI Deflection'] = 'NAV'
+        G3X_dict['VNAV Target Altitude'] = 'NAV'
+        G3X_dict['Roll Steering'] = 'NAV'
+        G3X_dict['MagVar'] = 'NAV'
+        G3X_dict['OAT'] = 'anemo'
+        G3X_dict['Density Altitude'] = 'anemo'
+        G3X_dict['Wind Speed'] = 'INS'
+        G3X_dict['Wind Direction'] = 'INS'
+        G3X_dict['AHRS Status'] = 'INS'
+        G3X_dict['AHRS Dev'] = 'INS'
+        G3X_dict['Magnetometer Status'] = 'NAV'
+        G3X_dict['Transponder Code'] = 'NAV'
+        G3X_dict['Transponder Mode'] = 'NAV'
+        G3X_dict['E1 OilT'] = 'engine'
+        G3X_dict['Fuel Qty'] = 'engine'
+        G3X_dict['E1 FPres'] = 'engine'
+        G3X_dict['E1 OilP'] = 'engine'
+        G3X_dict['E1 RPM'] = 'engine'
+        G3X_dict['E1 Volt1'] = 'engine'
+        G3X_dict['E1 Volt2'] = 'engine'
+        G3X_dict['E1 Amp1'] = 'engine'
+        G3X_dict['E1 FFlow'] = 'engine'
+        G3X_dict['E1 RPM2'] = 'engine'
+        G3X_dict['Hyd Main'] = 'engine'
+        G3X_dict['Hyd Emrg'] = 'engine'
+        G3X_dict['E1 EGT1'] = 'engine'
+        G3X_dict['CAS Alert'] = 'NAV'
+        G3X_dict['Terrain Alert'] = 'NAV'
+        #G3X_dict['Event Marker'] = 'INS'
+        
+        for key in in_map_groups.keys():
+            if G3X_dict.get(key):
+                out_map_groups[key] = G3X_dict[key]
         
     return out_map_groups
