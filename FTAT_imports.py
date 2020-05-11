@@ -1001,7 +1001,7 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         FXZI_dict['EOT_EU'] = 'engine'
         FXZI_dict['ERPM_EU'] = 'engine'
         FXZI_dict['EVENT_1_EU'] = 'FTI'
-        FXZI_dict['EVENT_2_EU'] = 'INS'
+        FXZI_dict['EVENT_2_EU'] = 'FTI'
         FXZI_dict['FLAP_POS_EU'] = 'commands'
         FXZI_dict['Fuel_left_kg'] = 'engine'
         FXZI_dict['G_Alt'] = 'INS'
