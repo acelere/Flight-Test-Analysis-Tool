@@ -63,22 +63,25 @@ def safe_set_scales(**kwargs):
     plot_data = kwargs.get('pltdt', None)
     plot_obj = kwargs.get('plt', None)
     
-    scale_min = float(plot_data.min())
-    scale_max = float(plot_data.max())
-    abs_delta = abs(scale_min - scale_max)
-    if abs_delta < 1:
-        if abs_delta < 0.00001:
-            if (scale_min == 0):
-                scale_max = scale_min + 0.01
-            elif (abs_delta == 0):
-                #this case, delta=0 but scale_min not zero
-                scale_max = scale_min * 1.01
-            else:
-                rel_min = (abs(scale_min - scale_max) / scale_min)
-                scale_max = scale_min + 0.01 * rel_min
+    if True in pd.isnull(plot_data):
+        pass
+    else:
+        scale_min = float(plot_data.min())
+        scale_max = float(plot_data.max())
+        abs_delta = abs(scale_min - scale_max)
+        if abs_delta < 1:
+            if abs_delta < 0.00001:
+                if (scale_min == 0):
+                    scale_max = scale_min + 0.01
+                elif (abs_delta == 0):
+                    #this case, delta=0 but scale_min not zero
+                    scale_max = scale_min * 1.01
+                else:
+                    rel_min = (abs(scale_min - scale_max) / scale_min)
+                    scale_max = scale_min + 0.01 * rel_min
 
-    plot_obj.ys.min = scale_min
-    plot_obj.ys.max = scale_max
+        plot_obj.ys.min = scale_min
+        plot_obj.ys.max = scale_max
 
 
 
