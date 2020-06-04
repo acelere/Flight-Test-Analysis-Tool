@@ -63,25 +63,22 @@ def safe_set_scales(**kwargs):
     plot_data = kwargs.get('pltdt', None)
     plot_obj = kwargs.get('plt', None)
     
-    if True in pd.isnull(plot_data):
-        pass
-    else:
-        scale_min = float(plot_data.min())
-        scale_max = float(plot_data.max())
-        abs_delta = abs(scale_min - scale_max)
-        if abs_delta < 1:
-            if abs_delta < 0.00001:
-                if (scale_min == 0):
-                    scale_max = scale_min + 0.01
-                elif (abs_delta == 0):
-                    #this case, delta=0 but scale_min not zero
-                    scale_max = scale_min * 1.01
-                else:
-                    rel_min = (abs(scale_min - scale_max) / scale_min)
-                    scale_max = scale_min + 0.01 * rel_min
+    scale_min = float(plot_data.min())
+    scale_max = float(plot_data.max())
+    abs_delta = abs(scale_min - scale_max)
+    if abs_delta < 1:
+        if abs_delta < 0.00001:
+            if (scale_min == 0):
+                scale_max = scale_min + 0.01
+            elif (abs_delta == 0):
+                #this case, delta=0 but scale_min not zero
+                scale_max = scale_min * 1.01
+            else:
+                rel_min = (abs(scale_min - scale_max) / scale_min)
+                scale_max = scale_min + 0.01 * rel_min
 
-        plot_obj.ys.min = scale_min
-        plot_obj.ys.max = scale_max
+    plot_obj.ys.min = scale_min
+    plot_obj.ys.max = scale_max
 
 
 
@@ -340,9 +337,8 @@ def G3Xweeksecondstoutc(df, leapseconds):
     '''
     datetimeformat = "%Y-%m-%d %H:%M:%S"
     datetimeformat_out = "%Y-%m-%d %H:%M:%S.%f"
-    #print(df.head())
-    epoch = datetime.datetime.strptime(df['Date (yyyy-mm-dd)'] + " " + "00:00:00", datetimeformat)
-    elapsed = datetime.timedelta(seconds=(df['GPS Time of Week (sec)'] + leapseconds))
+    epoch = datetime.datetime.strptime(df['Local Date'] + " " + "00:00:00", datetimeformat)
+    elapsed = datetime.timedelta(seconds=(df['GPS Time of Week'] + leapseconds))
     return datetime.datetime.strftime(epoch + elapsed,datetimeformat_out)
 
 
@@ -989,14 +985,22 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
                 
     elif 'FXZI' in filepath:
         FXZI_dict = {}
+
+        FXZI_dict['Wref100'] = 'FTI'
+        FXZI_dict['Wref102'] = 'FTI'
+        FXZI_dict['Wref98'] = 'FTI'
+        FXZI_dict['Wref'] = 'FTI'
+        
         FXZI_dict['AIRSPEED_PASCAL'] = 'anemo'
         FXZI_dict['AIRSPEED_Pd'] = 'anemo'
         FXZI_dict['AIRSPEED'] = 'anemo'
+        FXZI_dict['ALPHA_EU'] = 'anemo'
         FXZI_dict['ALTITUDE_FEET'] = 'anemo'
         FXZI_dict['ALTITUDE_PASCAL'] = 'anemo'
+        FXZI_dict['BETA_EU'] = 'anemo'
         FXZI_dict['DIVE_EU'] = 'commands'
         FXZI_dict['EGT_EU_1'] = 'engine'
-        FXZI_dict['ELEV_TRIM_POS_EU'] = 'INS'
+        FXZI_dict['ELEV_TRIM_POS_EU'] = 'commands'
         FXZI_dict['Eng1_FuelF_EU'] = 'engine'
         FXZI_dict['Eng1_FuelU_EU'] = 'engine'
         FXZI_dict['Eng2_FuelF_EU'] = 'engine'
@@ -1008,44 +1012,64 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         FXZI_dict['EVENT_2_EU'] = 'FTI'
         FXZI_dict['FLAP_POS_EU'] = 'commands'
         FXZI_dict['Fuel_left_kg'] = 'engine'
-        FXZI_dict['G_Alt'] = 'INS'
-        FXZI_dict['G_GS'] = 'INS'
-        FXZI_dict['G_Track'] = 'INS'
-        FXZI_dict['Garmin_LatDD'] = 'INS'
-        FXZI_dict['Garmin_LongDD'] = 'INS'
+        FXZI_dict['G_Alt'] = 'Garmin'
+        FXZI_dict['G_GS'] = 'Garmin'
+        FXZI_dict['G_Track'] = 'Garmin'
+        FXZI_dict['Garmin_LatDD'] = 'Garmin'
+        FXZI_dict['Garmin_LongDD'] = 'Garmin'
+        FXZI_dict['L_RUD_FORCE_EU'] = 'commands'
         FXZI_dict['LAT_CTL_POS_EU'] = 'commands'
         FXZI_dict['LAT_FORCE_EU'] = 'commands'
         FXZI_dict['LG_STS_EU'] = 'INS'
         FXZI_dict['LONG_CTL_POS_EU'] = 'commands'
         FXZI_dict['LONG_FORCE_EU'] = 'commands'
-        FXZI_dict['NxC_EU'] = 'INS'
-        FXZI_dict['NyC_EU'] = 'INS'
-        FXZI_dict['NzC_EU'] = 'INS'
+        FXZI_dict['NxC_EU'] = 'FTI'
+        FXZI_dict['NxL_EU'] = 'FTI'
+        FXZI_dict['NxR_EU'] = 'FTI'
+        FXZI_dict['NyC_EU'] = 'FTI'
+        FXZI_dict['NyL_EU'] = 'FTI'
+        FXZI_dict['NyR_EU'] = 'FTI'
+        FXZI_dict['NzC_EU'] = 'FTI'
+        FXZI_dict['NzL_EU'] = 'FTI'
+        FXZI_dict['NzR_EU'] = 'FTI'
+        FXZI_dict['OAT_EU'] = 'anemo'
+        FXZI_dict['R_RUD_FORCE_EU'] = 'commands'
         FXZI_dict['RUD_PDL_POS_EU'] = 'commands'
         FXZI_dict['THROT_POS_EU'] = 'commands'
         FXZI_dict['TotFuel_Rmng_EU'] = 'engine'
         FXZI_dict['TotFuelFlow_EU'] = 'engine'
         FXZI_dict['VN_Alt'] = 'INS'
         FXZI_dict['VN_DnVel'] = 'INS'
+        FXZI_dict['VN_DTheta0'] = 'INS'
+        FXZI_dict['VN_DTheta1'] = 'INS'
+        FXZI_dict['VN_DTheta2'] = 'INS'
         FXZI_dict['VN_Evel'] = 'INS'
+        FXZI_dict['VN_GPSTime'] = 'INS'
         FXZI_dict['VN_Lat'] = 'INS'
         FXZI_dict['VN_Long'] = 'INS'
+        FXZI_dict['VN_Mag0'] = 'INS'
+        FXZI_dict['VN_Mag1'] = 'INS'
+        FXZI_dict['VN_Mag2'] = 'INS'
         FXZI_dict['VN_NVel'] = 'INS'
         FXZI_dict['VN_Nx'] = 'INS'
         FXZI_dict['VN_Ny'] = 'INS'
         FXZI_dict['VN_Nz'] = 'INS'
         FXZI_dict['VN_PitchAng'] = 'INS'
         FXZI_dict['VN_PitchRate'] = 'INS'
+        FXZI_dict['VN_PosU'] = 'INS'
         FXZI_dict['VN_Press'] = 'INS'
         FXZI_dict['VN_RollAng'] = 'INS'
         FXZI_dict['VN_RollRate'] = 'INS'
         FXZI_dict['VN_Temp'] = 'INS'
+        FXZI_dict['VN_UnCompNx'] = 'INS'
+        FXZI_dict['VN_UnCompNy'] = 'INS'
+        FXZI_dict['VN_UnCompNz'] = 'INS'
+        FXZI_dict['VN_UnCompPitchRate'] = 'INS'
+        FXZI_dict['VN_UnCompRollRate'] = 'INS'
+        FXZI_dict['VN_UnCompYawRate'] = 'INS'
+        FXZI_dict['VN_VelU'] = 'INS'
         FXZI_dict['VN_YawAng'] = 'INS'
         FXZI_dict['VN_YawRate'] = 'INS'
-        FXZI_dict['Wref100'] = 'INS'
-        FXZI_dict['Wref102'] = 'INS'
-        FXZI_dict['Wref98'] = 'INS'
-        FXZI_dict['Wref'] = 'INS'
         
         for key in in_map_groups.keys():
             if FXZI_dict.get(key):
