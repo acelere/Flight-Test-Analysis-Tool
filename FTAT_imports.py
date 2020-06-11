@@ -281,8 +281,10 @@ def slice_trim(**kwargs):
     slicemap = kwargs.get('slcmap', None)
 
     delta_time = np.timedelta64(np.datetime64(analysis_plot.x_data_slice_max, 'us') - np.datetime64(analysis_plot.x_data_slice_min, 'us'))
-    min_delta = np.array((zoom_slider.get_slider_values()[0]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
-    max_delta = np.array((zoom_slider.get_slider_values()[1]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
+    #min_delta = np.array((zoom_slider.get_slider_values()[0]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
+    #max_delta = np.array((zoom_slider.get_slider_values()[1]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
+    min_delta = zoom_slider.get_slider_values()[0] / 100 * delta_time
+    max_delta = zoom_slider.get_slider_values()[1] / 100 * delta_time
     current_slice = time_slices_db.get(time_slices_db_radio.value)
     current_slice[2] = current_slice[1] + max_delta
     current_slice[1] = current_slice[1] + min_delta
@@ -488,7 +490,7 @@ class SimpleZoomSlider():
         self.minval = np.datetime64(plot.x_data_slice_min, 'us')
         self.maxval = np.datetime64(plot.x_data_slice_max, 'us')
 
-        self.delta_time_int = np.timedelta64(self.maxval-self.minval)
+        self.delta_time_int = np.timedelta64(self.maxval - self.minval)
         self.my_slider_layout = Layout(max_width='100%', width='80%', height='75px')
         
         
