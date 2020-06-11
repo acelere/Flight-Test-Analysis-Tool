@@ -634,8 +634,8 @@ class AnalysisPlot(LinePlotBrush):
 
                 self.fitted_line.x = pd.to_datetime((fittedx*1e9)+(initial_value*1e9))  ##
                 self.fitted_line.y = fittedy
-                self.ys.min=ydata.min(axis=0)
-                self.ys.max=ydata.max(axis=0)
+                self.ys.min = float(ydata.min(axis=0)) #the scale needs a float...
+                self.ys.max = float(ydata.max(axis=0))
                 stats_string = 'Highest to lowest expoents: '
 
                 for x in linefit:
