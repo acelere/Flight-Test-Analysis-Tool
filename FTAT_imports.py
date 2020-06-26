@@ -56,34 +56,19 @@ def data_slicer(data_stream, slice_start_time, slice_end_time):
     return sliced_data, selected_slice
 
 
-def safe_set_scales(**kwargs):
-    #this is only necessary due to a bug in the bqplot library.
-    #issue opened:  https://github.com/bqplot/bqplot/issues/1088
-    #still, even applying logic, graph freezes if data is a flat line at 2000 (SBG_Year for example)
+def safe_set_sc_n_dt(**kwargs):
+    #this is necessary due to a bug in the bqplot library
+    #and also when trying to set the minimum and the np.array is of type 'O', or object
     plot_data = kwargs.get('pltdt', None)
     plot_obj = kwargs.get('plt', None)
     
-    if isinstance(plot_data.min(), (int, float, np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.uint64, np.float32, np.float64)):
+    if isinstance(plot_data.flat[0], np.floating):
         scale_min = float(plot_data.min())
+        scale_max = float(plot_data.max())
+        plot_obj.line.y = plot_data
     else:
         scale_min = 0
-    
-    if isinstance(plot_data.max(), (int, float, np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.uint64, np.float32, np.float64)):
-        scale_max = float(plot_data.max())
-    else:
         scale_max = 0
-
-    #abs_delta = abs(scale_min - scale_max)
-    #if abs_delta < 1:
-    #    if abs_delta < 0.00001:
-    #        if (scale_min == 0):
-    #            scale_max = scale_min + 0.01
-    #        elif (abs_delta == 0):
-    #            #this case, delta=0 but scale_min not zero
-    #            scale_max = scale_min * 1.01
-    #        else:
-    #            rel_min = (abs(scale_min - scale_max) / scale_min)
-    #            scale_max = scale_min + 0.01 * rel_min
 
     plot_obj.ys.min = scale_min
     plot_obj.ys.max = scale_max
