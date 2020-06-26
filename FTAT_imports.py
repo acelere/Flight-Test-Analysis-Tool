@@ -95,9 +95,9 @@ def lib_detail_plot_update_brush(*args, **kwargs):
 
         # check if the brush selector has at least 2 points...
         if sliced_data.shape[0] > 1:
-            safe_set_scales(plt=detail_plot, pltdt=np.transpose(sliced_data).values)
+            safe_set_sc_n_dt(plt=detail_plot, pltdt=np.transpose(sliced_data).values)
             detail_plot.line.x = sliced_data.index.values
-            detail_plot.line.y = np.transpose(sliced_data).values
+            #detail_plot.line.y = np.transpose(sliced_data).values
             detail_plot_stats.value = sliced_data.describe().to_html()
             slicebox.update_values(slice_start_time, slice_end_time)
 
