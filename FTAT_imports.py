@@ -127,10 +127,13 @@ def lib_on_plot_button_clicked(b, **kwargs):
     sliced_data = current_plot_data.iloc[slice_start_index:slice_end_index]
     selected_slice = [sliced_data.index.values[0], sliced_data.index.values[-1]]
     
-    detail_plot.line.x = sliced_data.index.values
-    detail_plot.line.y = np.transpose(sliced_data)
+    # check if the brush selector has at least 2 points...
+    if sliced_data.shape[0] > 1:
+        safe_set_sc_n_dt(plt=detail_plot, pltdt=np.transpose(sliced_data).values)
+        detail_plot.line.x = sliced_data.index.values
+        #detail_plot.line.y = np.transpose(sliced_data).values
+        detail_plot_stats.value = sliced_data.describe().to_html()
     
-    detail_plot_stats.value = sliced_data.describe().to_html()
     
 
 
