@@ -873,7 +873,7 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         FPQA_dict['NF_2_PER'] = 'engine'
         FPQA_dict['NG_1_PER'] = 'engine'
         FPQA_dict['NG_2_PER'] = 'engine'
-        #FPQA_dict['NR_ROT_PER'] = ''
+        FPQA_dict['NR_ROT_PER'] = 'rotor'
         #FPQA_dict['NR_ROT_SEC'] = ''
         FPQA_dict['OAT'] = 'anemo'
         FPQA_dict['OAT_EU'] = 'anemo'
