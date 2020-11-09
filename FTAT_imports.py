@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt
 
 import os
 import subprocess
+from ipyfilechooser import FileChooser
 
 
 #functions
@@ -57,6 +58,19 @@ def data_slicer(data_stream, slice_start_time, slice_end_time):
 
 
 def safe_set_sc_n_dt(**kwargs):
+    #this function was necessary before bqplot 0.12.19
+    #scaling was fixed
+    #TODO: remove this function and move this code directly to graph update
+
+    plot_data = kwargs.get('pltdt', None)
+    plot_obj = kwargs.get('plt', None)
+    
+    scale_min = float(plot_data.min())
+    scale_max = float(plot_data.max())
+    plot_obj.line.y = plot_data
+    
+    
+    '''
     #this is necessary due to a bug in the bqplot library
     #and also when trying to set the minimum and the np.array is of type 'O', or object
     plot_data = kwargs.get('pltdt', None)
@@ -72,6 +86,7 @@ def safe_set_sc_n_dt(**kwargs):
 
     plot_obj.ys.min = scale_min
     plot_obj.ys.max = scale_max
+'''
 
 
 
