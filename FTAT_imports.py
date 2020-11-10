@@ -726,7 +726,8 @@ def load_data(unit_test, f, file_status_label):
             sine_label = 'sin' + str(i+1)
             cosine_label = 'cos' + str(i+1)
             raw_data[sine_label] = raw_data['sin0']
-            raw_data[cosine_label] = raw_data['cos0'] 
+            raw_data[cosine_label] = raw_data['cos0']
+        filetype = 'IADS'
     else:
 
         filename = f.selected
