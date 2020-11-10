@@ -709,63 +709,6 @@ class StripChart(object):
             strip_chart_items = [matplotlib_plot_button]
             box.children = strip_chart_items
 
-# ##########################
-# File Browser Interface
-
-# from:
-# https://gist.github.com/DrDub/6efba6e522302e43d055
-
-
-
-class FileBrowser(object):
-    def __init__(self):
-        self.path = os.getcwd()
-        self._update_files()
-        
-    def _update_files(self):
-        self.files = list()
-        self.dirs = list()
-        if(os.path.isdir(self.path)):
-            for f in os.listdir(self.path):
-                ff = self.path + "/" + f
-                if os.path.isdir(ff):
-                    self.dirs.append(f)
-                    self.dirs.sort()
-                else:
-                    self.files.append(f)
-                    self.files.sort()
-        
-    def widget(self):
-        box = widgets.VBox()
-        self._update(box)
-        return box
-    
-    def _update(self, box):
-        
-        def on_click(b):
-            if b.description == '..':
-                self.path = os.path.split(self.path)[0]
-            else:
-                self.path = self.path + "/" + b.description
-            self._update_files()
-            self._update(box)
-        
-        buttons = []
-        if self.files:
-            button = widgets.Button(description='..', background_color='#d0d0ff', layout=Layout(width='70%', height='35px'))
-            button.on_click(on_click)
-            buttons.append(button)
-        for f in self.dirs:
-            button = widgets.Button(description=f, background_color='#d0d0ff', layout=Layout(width='70%', height='35px'))
-            button.on_click(on_click)
-            buttons.append(button)
-        for f in self.files:
-            button = widgets.Button(description=f, layout=Layout(width='70%', height='35px'))
-            button.on_click(on_click)
-            buttons.append(button)
-        box.children = tuple([widgets.HTML("<h2>%s</h2>" % (self.path,))] + buttons)
-
-
 ####################################################################################################################################
 def load_data(unit_test, f, file_status_label):
     # Data Import
