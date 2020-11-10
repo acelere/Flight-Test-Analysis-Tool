@@ -80,7 +80,6 @@ def lib_detail_plot_update_brush(*args, **kwargs):
         if sliced_data.shape[0] > 1:
             detail_plot.line.y = np.transpose(sliced_data).values
             detail_plot.line.x = sliced_data.index.values
-            #detail_plot.line.y = np.transpose(sliced_data).values
             detail_plot_stats.value = sliced_data.describe().to_html()
             slicebox.update_values(slice_start_time, slice_end_time)
 
@@ -283,7 +282,6 @@ def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, 
     delta_time = np.datetime64(plot_object.x_data_slice_max, 'us') - np.datetime64(plot_object.x_data_slice_min, 'us')
     new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[0]/100*delta_time)
     new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[1]/100*delta_time)
-
     
     if new_xs_min < new_xs_max :
         plot_object.update_plot(current_plot_data, slicemap_map_selected, 
@@ -573,9 +571,7 @@ class AnalysisPlot(LinePlotBrush):
         
         self.xs.min=min([mark.x.min() for mark in self.fig.marks]) #this is datetime.datetime internally to bqplot
         self.xs.max=max([mark.x.max() for mark in self.fig.marks])
-        
-        #self.xs.min=min([mark.x.min() for mark in self.fig.marks]) + np.timedelta64(tz_slider, 'h') #this is datetime.datetime internally to bqplot
-        #self.xs.max=max([mark.x.max() for mark in self.fig.marks]) + np.timedelta64(tz_slider, 'h')
+
         self.fit_statistics = widgets.HTML(
                                         value="Empty <b>Empty</b>",
                                         placeholder='Poly Coefs',
@@ -732,10 +728,6 @@ def load_data(unit_test, f, file_status_label):
             raw_data[sine_label] = raw_data['sin0']
             raw_data[cosine_label] = raw_data['cos0'] 
     else:
-        # select file and read from disk
-        #print('Preparing Graph Parameters ... may take a while ... patience is a virtue.')
-        #print('Reading data from {} ...'.format(f.selected))
-        #raw_data=pd.read_csv(filepath, encoding='latin1', low_memory=False) #
 
         filename = f.selected
         filetype = 'IADS'
@@ -762,8 +754,6 @@ def load_data(unit_test, f, file_status_label):
         elif '#airframe_info' in first_line:
             file_status_label.value = 'G3X file detected'
             raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=[0,2,3,4,5,6,7,8,9,10]) #this is necessary to clean empty rows at the start of the file
-            #print(raw_data.columns)
-            #print(raw_data.head())
             raw_data['Time'] = raw_data.apply(G3Xweeksecondstoutc, args= (-18,), axis=1)
             raw_data.drop(['Date (yyyy-mm-dd)', 'Time (hh:mm:ss)', 'UTC Time (hh:mm:ss)', 'UTC Offset (hh:mm)', ], axis=1, inplace=True)
             filetype = 'G3X'
@@ -773,8 +763,6 @@ def load_data(unit_test, f, file_status_label):
         elif len(first_line) == 1:
             file_status_label.value = 'X-Plane file detected'
             raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=1, delimiter='|')
-            #raw_data['Time'] = raw_data['Time (s)'].apply(get_time)
-            #raw_data['delta_seconds'] = pd.to_timedelta(raw_data['   _real,_time'] - raw_data['   _real,_time'][0], unit='s')
             raw_data['Time'] = raw_data['   _real,_time '].apply(get_time)
             filetype = 'X-Plane'
             file_status_label.value = 'File input finished.'
