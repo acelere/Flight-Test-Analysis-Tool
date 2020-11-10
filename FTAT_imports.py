@@ -798,6 +798,95 @@ class FileBrowser(object):
         box.children = tuple([widgets.HTML("<h2>%s</h2>" % (self.path,))] + buttons)
 
 
+####################################################################################################################################
+def load_data(unit_test, f, file_status_label):
+    # Data Import
+
+    if unit_test:
+        # creating fake data just to test
+        rng = pd.date_range('27/10/2018 13:00:00', periods=5000, freq='50ms')
+        raw_data = pd.DataFrame(data=rng, columns=['Time'])
+        raw_data.set_index(['Time'], inplace=True)
+        raw_data['counter'] = np.arange(len(raw_data))
+
+        raw_data['fake_angle'] = raw_data.apply(lambda x: (raw_data['counter']/10)%(2*np.pi))
+        raw_data['all_zeroes'] = np.zeros(len(raw_data.index.values))
+        raw_data['sin0'] = raw_data['counter'] #I have no idea why, but if I do not first create 'sine1' and then calculate with lambda, it throwns me an error
+        raw_data['sin0'] = raw_data.apply(lambda x: np.sin(raw_data['fake_angle']))
+        raw_data['cos0'] = raw_data['counter']
+        raw_data['cos0'] = raw_data.apply(lambda x: np.cos(raw_data['fake_angle']))
+        for i in range(5):
+            sine_label = 'sin' + str(i+1)
+            cosine_label = 'cos' + str(i+1)
+            raw_data[sine_label] = raw_data['sin0']
+            raw_data[cosine_label] = raw_data['cos0'] 
+    else:
+        # select file and read from disk
+        #print('Preparing Graph Parameters ... may take a while ... patience is a virtue.')
+        #print('Reading data from {} ...'.format(f.selected))
+        #raw_data=pd.read_csv(filepath, encoding='latin1', low_memory=False) #
+
+        filename = f.selected
+        filetype = 'IADS'
+        with open(filename, errors='ignore') as fp:
+            first_line = fp.readline()
+        if 'iLevil' in first_line:
+            file_status_label.value = 'iLevil file detected'
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=5)
+            raw_data['Time'] = raw_data['UTC_TIME'] + "." + raw_data['TIMER(ms)'].apply(str)
+            filetype = 'ilevil'
+            file_status_label.value = 'File input finished.'
+            raw_data.drop(['LEGEND','DATE', 'UTC_TIME'],axis=1, inplace=True)
+
+        elif 'Analog 1' in first_line:
+            file_status_label.value = 'PDAS file detected'
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False)
+            #raw_data['Time'] = raw_data['Time (s)'].apply(get_time)
+            raw_data['delta_seconds'] = pd.to_timedelta(raw_data['Time (s)'] - raw_data['Time (s)'][0], unit='s')
+            raw_data['Time'] = pd.to_datetime(weeksecondstoutc(float(raw_data['GNSS Week'][0]),float(raw_data['GNSS TOW (s)'][0]), 0,18)) + raw_data['delta_seconds']
+            raw_data.drop(['delta_seconds'], axis=1, inplace=True)
+            filetype = 'PDAS'
+            file_status_label.value = 'File input finished.'
+
+        elif '#airframe_info' in first_line:
+            file_status_label.value = 'G3X file detected'
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=[0,2,3,4,5,6,7,8,9,10]) #this is necessary to clean empty rows at the start of the file
+            #print(raw_data.columns)
+            #print(raw_data.head())
+            raw_data['Time'] = raw_data.apply(G3Xweeksecondstoutc, args= (-18,), axis=1)
+            raw_data.drop(['Date (yyyy-mm-dd)', 'Time (hh:mm:ss)', 'UTC Time (hh:mm:ss)', 'UTC Offset (hh:mm)', ], axis=1, inplace=True)
+            filetype = 'G3X'
+            file_status_label.value = 'File input finished.'
+
+
+        elif len(first_line) == 1:
+            file_status_label.value = 'X-Plane file detected'
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=1, delimiter='|')
+            #raw_data['Time'] = raw_data['Time (s)'].apply(get_time)
+            #raw_data['delta_seconds'] = pd.to_timedelta(raw_data['   _real,_time'] - raw_data['   _real,_time'][0], unit='s')
+            raw_data['Time'] = raw_data['   _real,_time '].apply(get_time)
+            filetype = 'X-Plane'
+            file_status_label.value = 'File input finished.'
+
+        else:
+            file_status_label.value = 'Reading IADS file'
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False)
+            file_status_label.value = 'File input finished.'
+            dirty_file = False
+            if raw_data['Time'][10].count(':') > 2:
+                dirty_file = True
+
+            if dirty_file == True:
+                ## FOR DIRTY DATA
+                file_status_label.value = 'Dirty file detected ... cleaning up the data...'  #DIRTY DATA
+                raw_data.fillna(value=0, inplace=True)  #DIRTY DATA
+                raw_data['Time'] = (raw_data['Time'].str.slice_replace(0,4,''))  #DIRTY DATA
+
+        raw_data['Time'] = pd.to_datetime(raw_data['Time'])   #CLEAN DATA
+        raw_data = raw_data.set_index(['Time'])   #CLEAN DATA
+    return raw_data, filetype
+
+
         
 #####################################################################################################################################
 # PARAMETER GROUPS MAPS
