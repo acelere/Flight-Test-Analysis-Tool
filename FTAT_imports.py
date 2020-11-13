@@ -34,6 +34,22 @@ from ipyfilechooser import FileChooser
 
 
 #functions
+
+def get_sub_sample_rate(raw_data, desired_sub_sample_rate):
+    counter = 0
+    start_sample = raw_data.index[0]
+    next_sample = start_sample
+    while (next_sample - start_sample <= np.timedelta64(1, 's')):
+        counter = counter + 1
+        next_sample = raw_data.index[counter]
+    if desired_sub_sample_rate <= counter:
+        sub_sample_rate = int(counter / desired_sub_sample_rate)
+    else:
+        sub_sample_rate = int(counter)
+        desired_sub_sample_rate = counter
+    return sub_sample_rate, counter
+
+
 def data_slicer(data_stream, slice_start_time, slice_end_time):
     #helper function to return the sliced data
     #if start/stop outside range, return full data
@@ -540,6 +556,12 @@ class LinePlot:
 
         self.fig = Figure(marks=[self.line], axes=[self.xax, self.yax], layout=Layout(width = '80%'))
 ########
+    def update_plot(self, x_data, y_data):
+        self.x_data = x_data
+        self.y_data = y_data
+        #self.xax.scale.min = x_data.min()
+        #self.xax.scale.max = x_data.max()
+        
 
 
 
@@ -551,6 +573,9 @@ class LinePlotBrush(LinePlot):
         self.brushintsel = BrushIntervalSelector(scale=self.xs)
 
         self.fig = Figure(marks=[self.line], axes=[self.xax, self.yax], layout=Layout(width = '80%'), interaction=self.brushintsel)
+    
+    
+    ##########
 ########
 
 ########
