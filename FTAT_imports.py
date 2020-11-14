@@ -118,9 +118,11 @@ def lib_on_plot_button_clicked(b, **kwargs):
     new_end_time = current_start_time.replace(hour=slicebox.end_hour_box.value, 
                                               minute=slicebox.end_minute_box.value,
                                               second=slicebox.end_second_box.value)
+
     
     slice_start_index = current_plot_data.index.searchsorted(new_start_time)
     slice_end_index = current_plot_data.index.searchsorted(new_end_time)
+
     
     sliced_data = current_plot_data.iloc[slice_start_index:slice_end_index]
     selected_slice = [sliced_data.index.values[0], sliced_data.index.values[-1]]
@@ -380,8 +382,8 @@ class sliceSelectDialog():
         self.startTS_box_title.value = "Start"
         self.start_hour_box = widgets.BoundedIntText(
             value=current_plot_data.index[0].hour,
-            min=current_plot_data.index[0].hour,
-            max=current_plot_data.index[-1].hour,
+            min = 0,
+            max = 23,
             step=1,
             description='H',
             disabled=False,
@@ -412,8 +414,8 @@ class sliceSelectDialog():
         self.endTS_box_title.value = "_____End - H:M:S"
         self.end_hour_box = widgets.BoundedIntText(
             value=current_plot_data.index[0].hour,
-            min=current_plot_data.index[0].hour,
-            max=current_plot_data.index[-1].hour,
+            min=0,
+            max=23,
             step=1,
             description='H',
             disabled=False,
@@ -454,13 +456,18 @@ class sliceSelectDialog():
         
     def update_values(self, start, end):
         #start and stop are numpy datetime64 objects
-        self.start_hour_box.value = start.astype(object).hour
-        self.start_minute_box.value = start.astype(object).minute
-        self.start_second_box.value = start.astype(object).second
+        #however, learned that not all datetimes are equal:
+        # this : numpy.datetime64('2020-11-13T00:35:11.080')
+        # and  : numpy.datetime64('2020-11-13T00:01:53.520000000')
+        #DO NOT result in the same and I cannot use start.astype(object).hour....
+        # go figure!!!!
+        self.start_hour_box.value = start.astype('datetime64[h]').item().hour
+        self.start_minute_box.value = start.astype('datetime64[m]').item().minute
+        self.start_second_box.value = start.astype('datetime64[s]').item().second
         
-        self.end_hour_box.value = end.astype(object).hour
-        self.end_minute_box.value = end.astype(object).minute
-        self.end_second_box.value = end.astype(object).second
+        self.end_hour_box.value = end.astype('datetime64[h]').item().hour
+        self.end_minute_box.value = end.astype('datetime64[m]').item().minute
+        self.end_second_box.value = end.astype('datetime64[s]').item().second
 ######
 
 class DataSliceSelect():
@@ -559,8 +566,9 @@ class LinePlot:
     def update_plot(self, x_data, y_data):
         self.x_data = x_data
         self.y_data = y_data
-        #self.xax.scale.min = x_data.min()
-        #self.xax.scale.max = x_data.max()
+        self.line.x = x_data
+        self.line.y = y_data
+
         
 
 
@@ -739,19 +747,7 @@ def load_data(unit_test, f, file_status_label):
         rng = pd.date_range('27/10/2018 13:00:00', periods=5000, freq='50ms')
         raw_data = pd.DataFrame(data=rng, columns=['Time'])
         raw_data.set_index(['Time'], inplace=True)
-        raw_data['counter'] = np.arange(len(raw_data))
-
-        raw_data['fake_angle'] = raw_data.apply(lambda x: (raw_data['counter']/10)%(2*np.pi))
-        raw_data['all_zeroes'] = np.zeros(len(raw_data.index.values))
-        raw_data['sin0'] = raw_data['counter'] #I have no idea why, but if I do not first create 'sine1' and then calculate with lambda, it throwns me an error
-        raw_data['sin0'] = raw_data.apply(lambda x: np.sin(raw_data['fake_angle']))
-        raw_data['cos0'] = raw_data['counter']
-        raw_data['cos0'] = raw_data.apply(lambda x: np.cos(raw_data['fake_angle']))
-        for i in range(5):
-            sine_label = 'sin' + str(i+1)
-            cosine_label = 'cos' + str(i+1)
-            raw_data[sine_label] = raw_data['sin0']
-            raw_data[cosine_label] = raw_data['cos0']
+        raw_data['LOAD_DATA_FIRST'] = np.arange(len(raw_data))
         filetype = 'IADS'
     else:
 
