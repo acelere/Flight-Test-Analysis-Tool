@@ -295,18 +295,6 @@ def slice_trim(**kwargs):
 
 
 
-def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, zoom_slider):
-    
-    delta_time = np.datetime64(plot_object.x_data_slice_max, 'us') - np.datetime64(plot_object.x_data_slice_min, 'us')
-    new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[0]/100*delta_time)
-    new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[1]/100*delta_time)
-    
-    if new_xs_min < new_xs_max :
-        plot_object.update_plot(current_plot_data, slicemap_map_selected, 
-                              np.datetime64(new_xs_min, 'us'),
-                              np.datetime64(new_xs_max, 'us'),
-                              poly_order)
-
 def get_time(t):
     #simple PDAS converter
     #keep it for now
@@ -612,6 +600,20 @@ class AnalysisPlot(LinePlotBrush):
                                     )
         self.fit_statistics.value = 'Empty'
         
+    def update_plot_data(self, x_data, y_data):
+        self.x_fitted_data = x_data
+        self.y_fitted_data = y_data
+        self.x_data_slice_min = x_data.min()
+        self.x_data_slice_max = x_data.max()
+        self.line.x=x_data
+        self.line.y=y_data
+        self.fitted_line.x=self.x_fitted_data
+        self.fitted_line.y=self.y_fitted_data
+        
+        self.xs.min=min([mark.x.min() for mark in self.fig.marks]) #this is datetime.datetime internally to bqplot
+        self.xs.max=max([mark.x.max() for mark in self.fig.marks])
+
+        
         
     def update_plot(self, current_plot_data, parameter_list, slice_start, slice_end, poly_degree):
         '''
@@ -657,7 +659,17 @@ class AnalysisPlot(LinePlotBrush):
                 self.fit_statistics.value = stats_string
     ##########
 
-
+def update_analysis_plot(current_plot_data, slicemap_map_selected, plot_object, poly_order, zoom_slider):
+    
+    delta_time = np.datetime64(plot_object.x_data_slice_max, 'us') - np.datetime64(plot_object.x_data_slice_min, 'us')
+    new_xs_min = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[0]/100*delta_time)
+    new_xs_max = (np.datetime64(plot_object.x_data_slice_min, 'us') + zoom_slider.get_slider_values()[1]/100*delta_time)
+    
+    if new_xs_min < new_xs_max :
+        plot_object.update_plot(current_plot_data, slicemap_map_selected, 
+                              np.datetime64(new_xs_min, 'us'),
+                              np.datetime64(new_xs_max, 'us'),
+                              poly_order)
 
 
 class StripChart(object):
@@ -693,6 +705,7 @@ class StripChart(object):
         self.strip_chart_x_data = self.dataframe.iloc[(self.dataframe.index >= self.slice_start) & 
                                        (self.dataframe.index <= self.slice_end)].index
             
+        
        
     def widget(self):
         box = widgets.VBox()
