@@ -278,8 +278,6 @@ def slice_trim(**kwargs):
     slicemap = kwargs.get('slcmap', None)
 
     delta_time = np.timedelta64(np.datetime64(analysis_plot.x_data_slice_max, 'us') - np.datetime64(analysis_plot.x_data_slice_min, 'us'))
-    #min_delta = np.array((zoom_slider.get_slider_values()[0]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
-    #max_delta = np.array((zoom_slider.get_slider_values()[1]/100*delta_time).astype(datetime), dtype="timedelta64[us]")
     min_delta = zoom_slider.get_slider_values()[0] / 100 * delta_time
     max_delta = zoom_slider.get_slider_values()[1] / 100 * delta_time
     current_slice = time_slices_db.get(time_slices_db_radio.value)
@@ -571,8 +569,6 @@ class LinePlotBrush(LinePlot):
 
         self.fig = Figure(marks=[self.line], axes=[self.xax, self.yax], layout=Layout(width = '80%'), interaction=self.brushintsel)
     
-    
-    ##########
 ########
 
 ########
@@ -602,14 +598,10 @@ class AnalysisPlot(LinePlotBrush):
         self.fit_statistics.value = 'Empty'
         
     def update_plot_data(self, x_data, y_data):
-        #self.x_fitted_data = x_data
-        #self.y_fitted_data = y_data
         self.x_data_slice_min = x_data.min()
         self.x_data_slice_max = x_data.max()
         self.line.x=x_data
         self.line.y=y_data
-        #self.fitted_line.x=self.x_fitted_data
-        #self.fitted_line.y=self.y_fitted_data
         
         self.xs.min=min([mark.x.min() for mark in self.fig.marks]) #this is datetime.datetime internally to bqplot
         self.xs.max=max([mark.x.max() for mark in self.fig.marks])
