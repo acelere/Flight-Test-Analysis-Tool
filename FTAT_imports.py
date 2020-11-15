@@ -602,14 +602,14 @@ class AnalysisPlot(LinePlotBrush):
         self.fit_statistics.value = 'Empty'
         
     def update_plot_data(self, x_data, y_data):
-        self.x_fitted_data = x_data
-        self.y_fitted_data = y_data
+        #self.x_fitted_data = x_data
+        #self.y_fitted_data = y_data
         self.x_data_slice_min = x_data.min()
         self.x_data_slice_max = x_data.max()
         self.line.x=x_data
         self.line.y=y_data
-        self.fitted_line.x=self.x_fitted_data
-        self.fitted_line.y=self.y_fitted_data
+        #self.fitted_line.x=self.x_fitted_data
+        #self.fitted_line.y=self.y_fitted_data
         
         self.xs.min=min([mark.x.min() for mark in self.fig.marks]) #this is datetime.datetime internally to bqplot
         self.xs.max=max([mark.x.max() for mark in self.fig.marks])
