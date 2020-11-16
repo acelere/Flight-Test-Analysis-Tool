@@ -181,6 +181,14 @@ def lib_on_delTS_button_clicked(b, **kwargs):
         TS_message.value = 'trying to delete nothing?'    
     
 
+def create_download_link(df, title = "Download ZIP file", filename = "data.csv"):
+    #csv = df.to_csv()
+    b64 = base64.b64encode(df)
+    payload = b64.decode()
+    html = '<a download="{filename}" href="data:text/csv;base64,{payload}" style="color:rgb(0,0,255);" target="_blank">{title} </a>'
+    html = html.format(payload=payload,title=title,filename=filename)
+    return html
+
 
     
 def lib_save_slices(**kwargs):
@@ -190,6 +198,7 @@ def lib_save_slices(**kwargs):
     raw_data = kwargs.get('rawdt', None)
     slicemap = kwargs.get('slcmap', None)
     save_feedback = kwargs.get('svfb', None)
+    download_link = kwargs.get('dnld_lnk', None)
 
     filepath = '/home/jovyan/work/'
     
@@ -233,6 +242,12 @@ def lib_save_slices(**kwargs):
         file_msg = 'nothing saved, no test points sliced'
     else:
         file_msg = 'files saved to disk'
+        fileName = '/home/jovyan/work/TP_zipped.zip'
+        file = open(fileName, mode='rb')
+        fileContent = file.read()
+        link = create_download_link(fileContent, title = "Download zip file", filename = "TP_zipped.zip")
+        download_link.value = link
+        
     
     #delete data files
     process = subprocess.Popen(['rm'] + filename_collector, stdout=subprocess.PIPE)
@@ -821,13 +836,6 @@ def load_data(unit_test, f, file_status_label):
 # from https://medium.com/@charles2588/how-to-upload-download-files-to-from-notebook-in-my-local-machine-6a4e65a15767
 ######################################################
 
-def create_download_link( df, title = "Download CSV file", filename = "data.csv"):  
-    csv = df.to_csv()
-    b64 = base64.b64encode(csv.encode())
-    payload = b64.decode()
-    html = '<a download="{filename}" href="data:text/csv;base64,{payload}" target="_blank">{title}</a>'
-    html = html.format(payload=payload,title=title,filename=filename)
-    return HTML(html)
 
 
         
