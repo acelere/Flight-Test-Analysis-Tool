@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 import os
 import subprocess
 from ipyfilechooser import FileChooser
-
+import base64
 
 
 #functions
@@ -812,6 +812,22 @@ def load_data(unit_test, f, file_status_label):
         raw_data['Time'] = pd.to_datetime(raw_data['Time'])   #CLEAN DATA
         raw_data = raw_data.set_index(['Time'])   #CLEAN DATA
     return raw_data, filetype
+
+
+
+
+######################################################
+# File download button
+# from https://medium.com/@charles2588/how-to-upload-download-files-to-from-notebook-in-my-local-machine-6a4e65a15767
+######################################################
+
+def create_download_link( df, title = "Download CSV file", filename = "data.csv"):  
+    csv = df.to_csv()
+    b64 = base64.b64encode(csv.encode())
+    payload = b64.decode()
+    html = '<a download="{filename}" href="data:text/csv;base64,{payload}" target="_blank">{title}</a>'
+    html = html.format(payload=payload,title=title,filename=filename)
+    return HTML(html)
 
 
         
