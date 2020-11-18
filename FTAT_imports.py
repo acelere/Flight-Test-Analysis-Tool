@@ -20,7 +20,7 @@ from bqplot.market_map import MarketMap
 from traitlets import link
 
 from ipywidgets import ToggleButtons, VBox, HBox, HTML, Box, Output
-from ipywidgets import widgets
+from ipywidgets import widgets, FileUpload
 from ipywidgets import Label, Layout, Style
 from ipywidgets import interact, interactive, fixed, interact_manual
 from IPython.display import display, HTML
