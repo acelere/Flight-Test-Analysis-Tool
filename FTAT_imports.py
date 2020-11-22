@@ -329,14 +329,14 @@ def weeksecondstoutc(gpsweek,gpsseconds, delta_millis, leapseconds):
     return datetime.datetime.strftime(epoch + elapsed,datetimeformat_out)
 
 
-def G3Xweeksecondstoutc(df, leapseconds):
+def G3Xweeksecondstoutc(df, leapseconds, date_label):
     '''
     This function credit:
     https://gist.github.com/jeremiahajohnson
     '''
     datetimeformat = "%Y-%m-%d %H:%M:%S"
     datetimeformat_out = "%Y-%m-%d %H:%M:%S.%f"
-    epoch = datetime.datetime.strptime(df['Local Date'] + " " + "00:00:00", datetimeformat)
+    epoch = datetime.datetime.strptime(df[date_label] + " " + "00:00:00", datetimeformat)
     elapsed = datetime.timedelta(seconds=(df['GPS Time of Week'] + leapseconds))
     return datetime.datetime.strftime(epoch + elapsed,datetimeformat_out)
 
@@ -762,6 +762,7 @@ class StripChart(object):
 ####################################################################################################################################
 def load_data(unit_test, f, file_status_label):
     # Data Import
+    fileread_status = False
 
     if unit_test:
         # creating fake data just to test
@@ -783,6 +784,7 @@ def load_data(unit_test, f, file_status_label):
             filetype = 'ilevil'
             file_status_label.value = 'File input finished.'
             raw_data.drop(['LEGEND','DATE', 'UTC_TIME'],axis=1, inplace=True)
+            fileread_status = True
 
         elif 'Analog 1' in first_line:
             file_status_label.value = 'PDAS file detected'
@@ -793,15 +795,31 @@ def load_data(unit_test, f, file_status_label):
             raw_data.drop(['delta_seconds'], axis=1, inplace=True)
             filetype = 'PDAS'
             file_status_label.value = 'File input finished.'
+            fileread_status = True
 
         elif '#airframe_info' in first_line:
             file_status_label.value = 'G3X file detected'
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=[0,2,3,4,5,6,7,8,9,10]) #this is necessary to clean empty rows at the start of the file
-            raw_data['Time'] = raw_data.apply(G3Xweeksecondstoutc, args= (-18,), axis=1)
-            raw_data.drop(['Date (yyyy-mm-dd)', 'Time (hh:mm:ss)', 'UTC Time (hh:mm:ss)', 'UTC Offset (hh:mm)', ], axis=1, inplace=True)
+            with open(filename, errors='ignore') as fp:
+                line_read = fp.readline()
+                skip_counter = 0
+                date_label = ''
+                while not ('Local Date' in line_read) and not('Lcl Date' in line_read) and skip_counter < 50:
+                    skip_counter += 1
+                    line_read = fp.readline()
+                if 'Local Date' in line_read:
+                    date_label = 'Local Date'
+                elif 'Lcl Date' in line_read:
+                    date_label = 'Lcl Date'
+                else:
+                    #problem
+                    pass
+
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=skip_counter) #this is necessary to clean rows at the start of the file
+            
+            raw_data['Time'] = raw_data.apply(G3Xweeksecondstoutc, args= (-18, date_label), axis=1)
             filetype = 'G3X'
             file_status_label.value = 'File input finished.'
-
+            fileread_status = True
 
         elif len(first_line) == 1:
             file_status_label.value = 'X-Plane file detected'
@@ -809,6 +827,15 @@ def load_data(unit_test, f, file_status_label):
             raw_data['Time'] = raw_data['   _real,_time '].apply(get_time)
             filetype = 'X-Plane'
             file_status_label.value = 'File input finished.'
+            fileread_status = True
+            
+        elif 'GAU' in first_line:
+            #unsupported appareo file format
+            rng = pd.date_range('27/10/2018 13:00:00', periods=5000, freq='50ms')
+            raw_data = pd.DataFrame(data=rng, columns=['Time'])
+            raw_data['LOAD_DATA_FIRST'] = np.arange(len(raw_data))
+            filetype = 'IADS'
+            file_status_label.value = 'Unsupported Appareo format - data NOT loaded'
 
         else:
             file_status_label.value = 'Reading IADS file'
@@ -823,10 +850,11 @@ def load_data(unit_test, f, file_status_label):
                 file_status_label.value = 'Dirty file detected ... cleaning up the data...'  #DIRTY DATA
                 raw_data.fillna(value=0, inplace=True)  #DIRTY DATA
                 raw_data['Time'] = (raw_data['Time'].str.slice_replace(0,4,''))  #DIRTY DATA
-
+            fileread_status = True
+            
         raw_data['Time'] = pd.to_datetime(raw_data['Time'])   #CLEAN DATA
         raw_data = raw_data.set_index(['Time'])   #CLEAN DATA
-    return raw_data, filetype
+    return raw_data, filetype, fileread_status
 
 
 
