@@ -365,6 +365,7 @@ class ParameterMap:
         self.map.title_style = {'fill': 'Red'}
         
     def update_map(self, sub_sampled_data, map_groups):
+        self.map.selected = [] #need to blank out selected items otherwise there is a crash when map is updated
         self.sub_sampled_data = sub_sampled_data
         self.map_names = list(self.sub_sampled_data.columns)
         self.map_codes = [i for i in range(len(self.map_names))]
