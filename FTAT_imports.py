@@ -365,7 +365,6 @@ class ParameterMap:
         self.map.title_style = {'fill': 'Red'}
         
     def update_map(self, sub_sampled_data, map_groups):
-        self.map.selected = [] #need to blank out selected items otherwise there is a crash when map is updated
         self.sub_sampled_data = sub_sampled_data
         self.map_names = list(self.sub_sampled_data.columns)
         self.map_codes = [i for i in range(len(self.map_names))]
@@ -764,6 +763,7 @@ class StripChart(object):
 def load_data(unit_test, f, file_status_label):
     # Data Import
     fileread_status = False
+    bad_data = []
 
     if unit_test:
         # creating fake data just to test
@@ -855,7 +855,14 @@ def load_data(unit_test, f, file_status_label):
             
         raw_data['Time'] = pd.to_datetime(raw_data['Time'])   #CLEAN DATA
         raw_data = raw_data.set_index(['Time'])   #CLEAN DATA
-    return raw_data, filetype, fileread_status
+        raw_data = raw_data.apply(lambda s: pd.to_numeric(s, errors='coerce')) #try to force strings to numbers
+        #flag any bad data that might have made through
+        bad_data = []
+        for col in raw_data.columns:
+            if raw_data[col].dtypes == 'object':
+                bad_data.append(col)
+        
+    return raw_data, filetype, fileread_status, bad_data
 
 
 
