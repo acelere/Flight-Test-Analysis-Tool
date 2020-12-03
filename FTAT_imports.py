@@ -849,7 +849,6 @@ def load_data(unit_test, f, file_status_label):
             if dirty_file == True:
                 ## FOR DIRTY DATA
                 file_status_label.value = 'Dirty file detected ... cleaning up the data...'  #DIRTY DATA
-                raw_data.fillna(value=0, inplace=True)  #DIRTY DATA
                 raw_data['Time'] = (raw_data['Time'].str.slice_replace(0,4,''))  #DIRTY DATA
             fileread_status = True
             
@@ -861,6 +860,8 @@ def load_data(unit_test, f, file_status_label):
         for col in raw_data.columns:
             if raw_data[col].dtypes == 'object':
                 bad_data.append(col)
+        #drop any NaN's
+        raw_data.fillna(value=0, inplace=True)  #DIRTY DATA
         
     return raw_data, filetype, fileread_status, bad_data
 
