@@ -780,7 +780,7 @@ def load_data(unit_test, f, file_status_label):
             first_line = fp.readline()
         if 'iLevil' in first_line:
             file_status_label.value = 'iLevil file detected'
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=5)
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=5, error_bad_lines=False)
             raw_data['Time'] = raw_data['UTC_TIME'] + "." + raw_data['TIMER(ms)'].apply(str)
             filetype = 'ilevil'
             file_status_label.value = 'File input finished.'
@@ -789,7 +789,7 @@ def load_data(unit_test, f, file_status_label):
 
         elif 'Analog 1' in first_line:
             file_status_label.value = 'PDAS file detected'
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False)
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, error_bad_lines=False)
             #raw_data['Time'] = raw_data['Time (s)'].apply(get_time)
             raw_data['delta_seconds'] = pd.to_timedelta(raw_data['Time (s)'] - raw_data['Time (s)'][0], unit='s')
             raw_data['Time'] = pd.to_datetime(weeksecondstoutc(float(raw_data['GNSS Week'][0]),float(raw_data['GNSS TOW (s)'][0]), 0,18)) + raw_data['delta_seconds']
@@ -815,7 +815,7 @@ def load_data(unit_test, f, file_status_label):
                     #problem
                     pass
 
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=skip_counter) #this is necessary to clean rows at the start of the file
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=skip_counter, error_bad_lines=False) #this is necessary to clean rows at the start of the file
             
             raw_data['Time'] = raw_data.apply(G3Xweeksecondstoutc, args= (-18, date_label), axis=1)
             filetype = 'G3X'
@@ -824,7 +824,7 @@ def load_data(unit_test, f, file_status_label):
 
         elif len(first_line) == 1:
             file_status_label.value = 'X-Plane file detected'
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=1, delimiter='|')
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=1, delimiter='|', error_bad_lines=False)
             raw_data['Time'] = raw_data['   _real,_time '].apply(get_time)
             filetype = 'X-Plane'
             file_status_label.value = 'File input finished.'
@@ -840,7 +840,7 @@ def load_data(unit_test, f, file_status_label):
 
         else:
             file_status_label.value = 'Reading IADS file'
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False)
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, error_bad_lines=False)
             file_status_label.value = 'File input finished.'
             dirty_file = False
             if raw_data['Time'][10].count(':') > 2:
