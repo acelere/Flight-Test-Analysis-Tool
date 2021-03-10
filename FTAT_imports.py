@@ -780,7 +780,7 @@ def load_data(unit_test, f, file_status_label):
             first_line = fp.readline()
         if 'iLevil' in first_line:
             file_status_label.value = 'iLevil file detected'
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=5, error_bad_lines=False)
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=5, error_bad_lines=False, warn_bad_lines=False)
             raw_data['Time'] = raw_data['UTC_TIME'] + "." + raw_data['TIMER(ms)'].apply(str)
             filetype = 'ilevil'
             file_status_label.value = 'File input finished.'
@@ -789,7 +789,7 @@ def load_data(unit_test, f, file_status_label):
 
         elif 'Analog 1' in first_line:
             file_status_label.value = 'PDAS file detected'
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, error_bad_lines=False)
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, error_bad_lines=False, warn_bad_lines=False)
             #raw_data['Time'] = raw_data['Time (s)'].apply(get_time)
             raw_data['delta_seconds'] = pd.to_timedelta(raw_data['Time (s)'] - raw_data['Time (s)'][0], unit='s')
             raw_data['Time'] = pd.to_datetime(weeksecondstoutc(float(raw_data['GNSS Week'][0]),float(raw_data['GNSS TOW (s)'][0]), 0,18)) + raw_data['delta_seconds']
@@ -815,7 +815,7 @@ def load_data(unit_test, f, file_status_label):
                     #problem
                     pass
 
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=skip_counter, error_bad_lines=False) #this is necessary to clean rows at the start of the file
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=skip_counter, error_bad_lines=False, warn_bad_lines=False) #this is necessary to clean rows at the start of the file
             
             raw_data['Time'] = raw_data.apply(G3Xweeksecondstoutc, args= (-18, date_label), axis=1)
             filetype = 'G3X'
@@ -824,7 +824,7 @@ def load_data(unit_test, f, file_status_label):
 
         elif len(first_line) == 1:
             file_status_label.value = 'X-Plane file detected'
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=1, delimiter='|', error_bad_lines=False)
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=1, delimiter='|', error_bad_lines=False, warn_bad_lines=False)
             raw_data['Time'] = raw_data['   _real,_time '].apply(get_time)
             filetype = 'X-Plane'
             file_status_label.value = 'File input finished.'
@@ -838,9 +838,24 @@ def load_data(unit_test, f, file_status_label):
             filetype = 'IADS'
             file_status_label.value = 'Unsupported Appareo format - data NOT loaded'
 
+        elif 'flycState' in first_line:
+            file_status_label.value = 'DJI file detected'
+            skip_counter = 0
+            date_label = 'datetime(utc)'
+            timelabel = 'time(millisecond)'
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=skip_counter, error_bad_lines=False, warn_bad_lines=False)
+            if timelabel not in raw_data.columns:
+                timelabel = 'timesample(millisecond)'
+            # assemble the full timestamp by concatenatiing columns
+            raw_data['full_datetime'] = raw_data[date_label].astype(str) + '.' + raw_data[timelabel].astype(str)
+            raw_data['Time'] = pd.to_datetime(raw_data['full_datetime'])
+            filetype = 'DJI'
+            file_status_label.value = 'File input finished.'
+            fileread_status = True          
+            
         else:
             file_status_label.value = 'Reading IADS file'
-            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, error_bad_lines=False)
+            raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, error_bad_lines=False, warn_bad_lines=False)
             file_status_label.value = 'File input finished.'
             dirty_file = False
             if raw_data['Time'][10].count(':') > 2:
@@ -1440,5 +1455,60 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         for key in in_map_groups.keys():
             if G3X_dict.get(key):
                 out_map_groups[key] = G3X_dict[key]
+        
+        
+    elif 'DJI' in filetype:
+        DJI_dict = {}
+        DJI_dict['time(millisecond)'] = 'GPS'
+        DJI_dict['datetime(utc)'] = 'GPS'
+        DJI_dict['latitude'] = 'GPS'
+        DJI_dict['longitude'] = 'GPS'
+        DJI_dict['height_above_takeoff(feet)'] = 'baro'
+        DJI_dict['height_above_ground_at_drone_location(feet)'] = 'baro'
+        DJI_dict['ground_elevation_at_drone_location(feet)'] = 'GPS'
+        DJI_dict['altitude_above_seaLevel(feet)'] = 'baro'
+        DJI_dict['height_sonar(feet)'] = 'baro'
+        DJI_dict['speed(mph)'] = 'baro'
+        DJI_dict['distance(feet)'] = 'GPS'
+        DJI_dict['satellites'] = 'GPS'
+        DJI_dict['gpslevel'] = 'GPS'
+        DJI_dict['voltage(v)'] = 'prop'
+        DJI_dict['max_altitude(feet)'] = 'baro'
+        DJI_dict['max_ascent(feet)'] = 'baro'
+        DJI_dict['max_speed(mph)'] = 'baro'
+        DJI_dict['max_distance(feet)'] = 'GPS'
+        DJI_dict[' xSpeed(mph)'] = 'GPS'
+        DJI_dict[' ySpeed(mph)'] = 'GPS'
+        DJI_dict[' zSpeed(mph)'] = 'GPS'
+        DJI_dict[' compass_heading(degrees)'] = 'INS'
+        DJI_dict[' pitch(degrees)'] = 'INS'
+        DJI_dict[' roll(degrees)'] = 'INS'
+        DJI_dict['isPhoto'] = 'FTI'
+        DJI_dict['isVideo'] = 'FTI'
+        DJI_dict['rc_elevator'] = 'FCS'
+        DJI_dict['rc_aileron'] = 'FCS'
+        DJI_dict['rc_throttle'] = 'FCS'
+        DJI_dict['rc_rudder'] = 'FCS'
+        DJI_dict['gimbal_heading(degrees)'] = 'EO'
+        DJI_dict['gimbal_pitch(degrees)'] = 'EO'
+        DJI_dict['battery_percent'] = 'prop'
+        DJI_dict['voltageCell1'] = 'prop'
+        DJI_dict['voltageCell2'] = 'prop'
+        DJI_dict['voltageCell3'] = 'prop'
+        DJI_dict['voltageCell4'] = 'prop'
+        DJI_dict['voltageCell5'] = 'prop'
+        DJI_dict['voltageCell6'] = 'prop'
+        DJI_dict['current(A)'] = 'prop'
+        DJI_dict['battery_temperature(f)'] = 'prop'
+        DJI_dict['altitude(feet)'] = 'baro'
+        DJI_dict['ascent(feet)'] = 'baro'
+        DJI_dict['flycStateRaw'] = 'FCS'
+        DJI_dict['flycState'] = 'FCS'
+        DJI_dict['message'] = 'FCS'
+        DJI_dict['full_datetime'] = 'FTI'
+        
+        for key in in_map_groups.keys():
+            if DJI_dict.get(key):
+                out_map_groups[key] = DJI_dict[key]
         
     return out_map_groups
