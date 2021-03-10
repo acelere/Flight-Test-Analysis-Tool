@@ -1456,4 +1456,59 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
             if G3X_dict.get(key):
                 out_map_groups[key] = G3X_dict[key]
         
+        
+    elif 'DJI' in filetype:
+        DJI_dict = {}
+        DJI_dict['time(millisecond)'] = 'GPS'
+        DJI_dict['datetime(utc)'] = 'GPS'
+        DJI_dict['latitude'] = 'GPS'
+        DJI_dict['longitude'] = 'GPS'
+        DJI_dict['height_above_takeoff(feet)'] = 'baro'
+        DJI_dict['height_above_ground_at_drone_location(feet)'] = 'baro'
+        DJI_dict['ground_elevation_at_drone_location(feet)'] = 'GPS'
+        DJI_dict['altitude_above_seaLevel(feet)'] = 'baro'
+        DJI_dict['height_sonar(feet)'] = 'baro'
+        DJI_dict['speed(mph)'] = 'baro'
+        DJI_dict['distance(feet)'] = 'GPS'
+        DJI_dict['satellites'] = 'GPS'
+        DJI_dict['gpslevel'] = 'GPS'
+        DJI_dict['voltage(v)'] = 'prop'
+        DJI_dict['max_altitude(feet)'] = 'baro'
+        DJI_dict['max_ascent(feet)'] = 'baro'
+        DJI_dict['max_speed(mph)'] = 'baro'
+        DJI_dict['max_distance(feet)'] = 'GPS'
+        DJI_dict[' xSpeed(mph)'] = 'GPS'
+        DJI_dict[' ySpeed(mph)'] = 'GPS'
+        DJI_dict[' zSpeed(mph)'] = 'GPS'
+        DJI_dict[' compass_heading(degrees)'] = 'INS'
+        DJI_dict[' pitch(degrees)'] = 'INS'
+        DJI_dict[' roll(degrees)'] = 'INS'
+        DJI_dict['isPhoto'] = 'FTI'
+        DJI_dict['isVideo'] = 'FTI'
+        DJI_dict['rc_elevator'] = 'FCS'
+        DJI_dict['rc_aileron'] = 'FCS'
+        DJI_dict['rc_throttle'] = 'FCS'
+        DJI_dict['rc_rudder'] = 'FCS'
+        DJI_dict['gimbal_heading(degrees)'] = 'EO'
+        DJI_dict['gimbal_pitch(degrees)'] = 'EO'
+        DJI_dict['battery_percent'] = 'prop'
+        DJI_dict['voltageCell1'] = 'prop'
+        DJI_dict['voltageCell2'] = 'prop'
+        DJI_dict['voltageCell3'] = 'prop'
+        DJI_dict['voltageCell4'] = 'prop'
+        DJI_dict['voltageCell5'] = 'prop'
+        DJI_dict['voltageCell6'] = 'prop'
+        DJI_dict['current(A)'] = 'prop'
+        DJI_dict['battery_temperature(f)'] = 'prop'
+        DJI_dict['altitude(feet)'] = 'baro'
+        DJI_dict['ascent(feet)'] = 'baro'
+        DJI_dict['flycStateRaw'] = 'FCS'
+        DJI_dict['flycState'] = 'FCS'
+        DJI_dict['message'] = 'FCS'
+        DJI_dict['full_datetime'] = 'FTI'
+        
+        for key in in_map_groups.keys():
+            if DJI_dict.get(key):
+                out_map_groups[key] = DJI_dict[key]
+        
     return out_map_groups
