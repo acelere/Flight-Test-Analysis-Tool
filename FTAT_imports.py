@@ -1112,6 +1112,8 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         FXZI_dict['BETA_EU'] = 'anemo'
         FXZI_dict['DIVE_EU'] = 'commands'
         FXZI_dict['EGT_EU_1'] = 'engine'
+        FXZI_dict['EGT_EU'] = 'engine'
+        FXZI_dict['EGT_EU_1_Compensated'] = 'engine'
         FXZI_dict['ELEV_TRIM_POS_EU'] = 'commands'
         FXZI_dict['Eng1_FuelF_EU'] = 'engine'
         FXZI_dict['Eng1_FuelU_EU'] = 'engine'
