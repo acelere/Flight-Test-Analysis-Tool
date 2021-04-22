@@ -1095,7 +1095,7 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         FXZI_dict['Wref102'] = 'FTI'
         FXZI_dict['Wref98'] = 'FTI'
         FXZI_dict['Wref'] = 'FTI'
-        
+        FXZI_dict['TRUE_AIRSPEED'] = 'anemo'
         FXZI_dict['AIRSPEED_PASCAL'] = 'anemo'
         FXZI_dict['AIRSPEED_Pd'] = 'anemo'
         FXZI_dict['AIRSPEED'] = 'anemo'
@@ -1175,6 +1175,9 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         FXZI_dict['VN_VelU'] = 'INS'
         FXZI_dict['VN_YawAng'] = 'INS'
         FXZI_dict['VN_YawRate'] = 'INS'
+        FXZI_dict['VN_NumSats'] = 'INS'
+        FXZI_dict['VN_ImuStatus'] = 'INS'
+        FXZI_dict['VN_GnssFix'] = 'INS'
         
         for key in in_map_groups.keys():
             if FXZI_dict.get(key):
