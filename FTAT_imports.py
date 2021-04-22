@@ -1098,8 +1098,7 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         FXZI_dict['EQUIVALENT_AIRSPEED'] = 'anemo'
         FXZI_dict['MACH'] = 'anemo'
         FXZI_dict['delta_ISA'] = 'anemo'
-        FXZI_dict['delta_ISA22'] = 'anemo'
-        FXZI_dict['theta_ISA'] = 'anemo'
+        FXZI_dict['delta_ISA2'] = 'anemo'
         FXZI_dict['theta_ISA'] = 'anemo'
         FXZI_dict['sigma_ISA'] = 'anemo'
         FXZI_dict['p_ISA'] = 'anemo'
@@ -1136,6 +1135,16 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         FXZI_dict['LG_STS_EU'] = 'INS'
         FXZI_dict['LONG_CTL_POS_EU'] = 'commands'
         FXZI_dict['LONG_FORCE_EU'] = 'commands'
+        FXZI_dict['LAT_CTL_POS_CM_EU'] = 'commands'
+        FXZI_dict['LAT_FORCE_NEWTONS_EU'] = 'commands'
+        FXZI_dict['LONG_CTL_POS_CM_EU'] = 'commands'
+        FXZI_dict['LONG_FORCE_NEWTONS_EU'] = 'commands'
+        FXZI_dict['L_RUD_FORCE_NEWTONS_EU'] = 'commands'
+        FXZI_dict['R_RUD_FORCE_NEWTONS_EU'] = 'commands'
+        
+         
+ 
+
         FXZI_dict['NxC_EU'] = 'FTI'
         FXZI_dict['NxL_EU'] = 'FTI'
         FXZI_dict['NxR_EU'] = 'FTI'
@@ -1186,6 +1195,8 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         FXZI_dict['VN_NumSats'] = 'INS'
         FXZI_dict['VN_ImuStatus'] = 'INS'
         FXZI_dict['VN_GnssFix'] = 'INS'
+        FXZI_dict['VN_PitchAng_Comp'] = 'INS'
+
         
         for key in in_map_groups.keys():
             if FXZI_dict.get(key):
