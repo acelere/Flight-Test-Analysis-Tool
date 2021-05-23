@@ -374,6 +374,10 @@ class ParameterMap:
         
         self.map.names = self.map_names
         self.map.groups = self.map_groups
+    
+    def clear_selected(self):
+        self.map.set_state({'selected':[]})
+        self.map.send_state({'selected':[]})
 
 
 class sliceSelectDialog():
