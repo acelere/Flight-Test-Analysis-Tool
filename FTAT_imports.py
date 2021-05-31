@@ -787,7 +787,6 @@ def load_data(unit_test, f, file_status_label):
             raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=5, error_bad_lines=False, warn_bad_lines=False)
             raw_data['Time'] = raw_data['UTC_TIME'] + "." + raw_data['TIMER(ms)'].apply(str)
             filetype = 'ilevil'
-            file_status_label.value = 'File input finished.'
             raw_data.drop(['LEGEND','DATE', 'UTC_TIME'],axis=1, inplace=True)
             fileread_status = True
 
@@ -799,7 +798,6 @@ def load_data(unit_test, f, file_status_label):
             raw_data['Time'] = pd.to_datetime(weeksecondstoutc(float(raw_data['GNSS Week'][0]),float(raw_data['GNSS TOW (s)'][0]), 0,18)) + raw_data['delta_seconds']
             raw_data.drop(['delta_seconds'], axis=1, inplace=True)
             filetype = 'PDAS'
-            file_status_label.value = 'File input finished.'
             fileread_status = True
 
         elif '#airframe_info' in first_line:
@@ -823,7 +821,6 @@ def load_data(unit_test, f, file_status_label):
             
             raw_data['Time'] = raw_data.apply(G3Xweeksecondstoutc, args= (-18, date_label), axis=1)
             filetype = 'G3X'
-            file_status_label.value = 'File input finished.'
             fileread_status = True
 
         elif len(first_line) == 1:
@@ -831,7 +828,6 @@ def load_data(unit_test, f, file_status_label):
             raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=1, delimiter='|', error_bad_lines=False, warn_bad_lines=False)
             raw_data['Time'] = raw_data['   _real,_time '].apply(get_time)
             filetype = 'X-Plane'
-            file_status_label.value = 'File input finished.'
             fileread_status = True
             
         elif 'GAU' in first_line:
@@ -840,33 +836,23 @@ def load_data(unit_test, f, file_status_label):
             raw_data = pd.DataFrame(data=rng, columns=['Time'])
             raw_data['LOAD_DATA_FIRST'] = np.arange(len(raw_data))
             filetype = 'IADS'
-            file_status_label.value = 'Unsupported Appareo format - data NOT loaded'
+            #file_status_label.value = 'Unsupported Appareo format - data NOT loaded'
 
         elif 'flycState' in first_line:
             file_status_label.value = 'DJI file detected'
             skip_counter = 0
-            date_label = 'datetime(utc)'
-            timelabel = 'time(millisecond)'
+            #DJI date format is strange. It does not contain the seconds
+            #chose to ignore the flight date and use pure milliseconds as time vector
             raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, skiprows=skip_counter, error_bad_lines=False, warn_bad_lines=False)
-            if timelabel not in raw_data.columns:
-                timelabel = 'timesample(millisecond)'
-            # assemble the full timestamp by concatenatiing columns
-            raw_data['full_datetime'] = raw_data[date_label].astype(str) + '.' + raw_data[timelabel].astype(str)
-            raw_data['Time'] = pd.to_datetime(raw_data['full_datetime'])
+            raw_data['Time'] =  pd.to_datetime(raw_data['time(millisecond)'], unit='ms')
             filetype = 'DJI'
-            file_status_label.value = 'File input finished.'
             fileread_status = True          
             
         else:
             file_status_label.value = 'Reading IADS file'
             raw_data=pd.read_csv(filename, encoding='latin1', low_memory=False, error_bad_lines=False, warn_bad_lines=False)
-            file_status_label.value = 'File input finished.'
-            dirty_file = False
+            
             if raw_data['Time'][10].count(':') > 2:
-                dirty_file = True
-
-            if dirty_file == True:
-                ## FOR DIRTY DATA
                 file_status_label.value = 'Dirty file detected ... cleaning up the data...'  #DIRTY DATA
                 raw_data['Time'] = (raw_data['Time'].str.slice_replace(0,4,''))  #DIRTY DATA
             fileread_status = True
@@ -881,6 +867,7 @@ def load_data(unit_test, f, file_status_label):
                 bad_data.append(col)
         #drop any NaN's
         raw_data.fillna(value=0, inplace=True)  #DIRTY DATA
+        file_status_label.value = f'Valid file import status: {fileread_status}, for type {filetype}'
         
     return raw_data, filetype, fileread_status, bad_data
 
