@@ -1134,10 +1134,6 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         FXZI_dict['LONG_FORCE_NEWTONS_EU'] = 'commands'
         FXZI_dict['L_RUD_FORCE_NEWTONS_EU'] = 'commands'
         FXZI_dict['R_RUD_FORCE_NEWTONS_EU'] = 'commands'
-        
-         
- 
-
         FXZI_dict['NxC_EU'] = 'FTI'
         FXZI_dict['NxL_EU'] = 'FTI'
         FXZI_dict['NxR_EU'] = 'FTI'
@@ -1235,6 +1231,9 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         for key in in_map_groups.keys():
             if N7025J_dict.get(key):
                 out_map_groups[key] = N7025J_dict[key]
+    # _____
+    
+   #__________             
                 
     elif 'PDAS' in filetype:
         PDAS_dict = {}      
@@ -1525,5 +1524,134 @@ def get_param_group(filepath, filetype, raw_data, in_map_groups):
         for key in in_map_groups.keys():
             if DJI_dict.get(key):
                 out_map_groups[key] = DJI_dict[key]
-        
+
+    elif 'FYWQ' in filepath or \
+         'FPUI' in filepath or \
+         'FETU' in filepath : #FYWQ=Duke with PDAS; FPUI=Brasov; FETU=S76 PDAS
+        PDAS_IADS_dict = {}
+
+        PDAS_IADS_dict['active'] = 'FTI'
+        PDAS_IADS_dict['agl_alt_ft'] = 'INS'
+        PDAS_IADS_dict['ain0_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain0_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain0_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain0_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain10_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain10_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain10_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain10_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain11_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain11_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain11_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain11_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain1_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain1_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain1_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain1_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain2_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain2_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain2_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain2_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain3_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain3_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain3_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain3_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain4_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain4_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain4_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain4_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain5_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain5_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain5_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain5_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain6_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain6_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain6_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain6_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain7_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain7_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain7_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain7_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain8_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain8_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain8_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain8_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain9_cal_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain9_en'] = 'ANALOG'
+        PDAS_IADS_dict['ain9_filt_v'] = 'ANALOG'
+        PDAS_IADS_dict['ain9_v'] = 'ANALOG'
+
+        PDAS_IADS_dict['density_alt_ft'] = 'anemo'
+        PDAS_IADS_dict['diff_press_filt_pa'] = 'anemo'
+        PDAS_IADS_dict['diff_press_pa'] = 'anemo'
+        PDAS_IADS_dict['eas_kts'] = 'anemo'
+        PDAS_IADS_dict['ekf_accel_x_g'] = 'INS'
+        PDAS_IADS_dict['ekf_accel_y_g'] = 'INS'
+        PDAS_IADS_dict['ekf_accel_z_g'] = 'INS'
+        PDAS_IADS_dict['ekf_alt_ft'] = 'INS'
+        PDAS_IADS_dict['ekf_att_uncert_deg'] = 'INS'
+        PDAS_IADS_dict['ekf_down_vel_kts'] = 'INS'
+        PDAS_IADS_dict['ekf_east_vel_kts'] = 'INS'
+        PDAS_IADS_dict['ekf_gyro_x_dps'] = 'INS'
+        PDAS_IADS_dict['ekf_gyro_y_dps'] = 'INS'
+        PDAS_IADS_dict['ekf_gyro_z_dps'] = 'INS'
+        PDAS_IADS_dict['ekf_lat_deg'] = 'INS'
+        PDAS_IADS_dict['ekf_lon_deg'] = 'INS'
+        PDAS_IADS_dict['ekf_mag_x_ut'] = 'INS'
+        PDAS_IADS_dict['ekf_mag_y_ut'] = 'INS'
+        PDAS_IADS_dict['ekf_mag_z_ut'] = 'INS'
+        PDAS_IADS_dict['ekf_north_vel_kts'] = 'INS'
+        PDAS_IADS_dict['ekf_pitch_deg'] = 'INS'
+        PDAS_IADS_dict['ekf_pos_uncert_ft'] = 'INS'
+        PDAS_IADS_dict['ekf_roll_deg'] = 'INS'
+        PDAS_IADS_dict['ekf_vel_uncert_kts'] = 'INS'
+        PDAS_IADS_dict['ekf_yaw_deg'] = 'INS'
+        PDAS_IADS_dict['gnss_alt_ft'] = 'INS'
+        PDAS_IADS_dict['gnss_down_vel_kts'] = 'INS'
+        PDAS_IADS_dict['gnss_east_vel_kts'] = 'INS'
+        PDAS_IADS_dict['gnss_fix_type'] = 'INS'
+        PDAS_IADS_dict['gnss_horiz_acc_ft'] = 'INS'
+        PDAS_IADS_dict['gnss_lat_deg'] = 'INS'
+        PDAS_IADS_dict['gnss_long_deg'] = 'INS'
+        PDAS_IADS_dict['gnss_north_vel_kts'] = 'INS'
+        PDAS_IADS_dict['gnss_num_sat'] = 'INS'
+        PDAS_IADS_dict['gnss_speed_acc_kts'] = 'INS'
+        PDAS_IADS_dict['gnss_tow_s'] = 'INS'
+        PDAS_IADS_dict['gnss_vert_acc_ft'] = 'INS'
+        PDAS_IADS_dict['gnss_week'] = 'INS'
+        PDAS_IADS_dict['ias_kts'] = 'anemo'
+        PDAS_IADS_dict['imu_accel_x_g'] = 'INS'
+        PDAS_IADS_dict['imu_accel_y_g'] = 'INS'
+        PDAS_IADS_dict['imu_accel_z_g'] = 'INS'
+        PDAS_IADS_dict['imu_gyro_x_dps'] = 'INS'
+        PDAS_IADS_dict['imu_gyro_y_dps'] = 'INS'
+        PDAS_IADS_dict['imu_gyro_z_dps'] = 'INS'
+        PDAS_IADS_dict['imu_mag_x_ut'] = 'INS'
+        PDAS_IADS_dict['imu_mag_y_ut'] = 'INS'
+        PDAS_IADS_dict['imu_mag_z_ut'] = 'INS'
+        PDAS_IADS_dict['oat_en'] = 'anemo'
+        PDAS_IADS_dict['pitot_static_en'] = 'anemo'
+        PDAS_IADS_dict['press_alt_ft'] = 'anemo'
+        PDAS_IADS_dict['static_press_filt_pa'] = 'anemo'
+        PDAS_IADS_dict['static_press_pa'] = 'anemo'
+        PDAS_IADS_dict['tas_kts'] = 'anemo'
+        PDAS_IADS_dict['temp_c'] = 'anemo'
+        PDAS_IADS_dict['temp_filt_c'] = 'anemo'
+        PDAS_IADS_dict['test_point'] = 'FTI'
+        PDAS_IADS_dict['LAT_%'] = 'FTI'
+        PDAS_IADS_dict['LAT_Deg'] = 'FTI'
+        PDAS_IADS_dict['LONG_Deg'] = 'FTI'
+        PDAS_IADS_dict['LONG_%'] = 'FTI'
+        PDAS_IADS_dict['RUD_%'] = 'FTI'
+        PDAS_IADS_dict['RUD_Deg'] = 'FTI'
+        PDAS_IADS_dict['Lateral_Pos'] = 'FTI'
+        PDAS_IADS_dict['Longitudinal_Pos'] = 'FTI'
+        PDAS_IADS_dict['Rudder_Pos'] = 'FTI'
+        PDAS_IADS_dict['test_point'] = 'FTI'
+
+        for key in in_map_groups.keys():
+            if PDAS_IADS_dict.get(key):
+                out_map_groups[key] = PDAS_IADS_dict[key]
+
+
     return out_map_groups
